@@ -1,12 +1,8 @@
 {
   "version": 2,
-  "dgSpecHash": "D2Ikj0Uzb5e9KRLj25uRCpc1h7Jg2yqMbgo0WAh+FTPVkpRtC3yK+JcJOxYJ/3Qx/j835OJbFWH8GMal3GcWWw==",
+  "dgSpecHash": "0ir72Dg2hmznUmHiOWSBpLwuCCFI4mEMtEz0eopnWJGUlumJjFsEyp22AlNeMAnzAADOKWWVo4kXBkmMzQZO+g==",
   "success": true,
-  "projectFilePath": "D:\\c69_shell\\c69_shell.csproj",
-  "expectedPackageFiles": [
-    "C:\\Users\\Cross\\.nuget\\packages\\microsoft.netcore.app.runtime.linux-x64\\5.0.10\\microsoft.netcore.app.runtime.linux-x64.5.0.10.nupkg.sha512",
-    "C:\\Users\\Cross\\.nuget\\packages\\microsoft.aspnetcore.app.runtime.linux-x64\\5.0.10\\microsoft.aspnetcore.app.runtime.linux-x64.5.0.10.nupkg.sha512",
-    "C:\\Users\\Cross\\.nuget\\packages\\microsoft.netcore.app.host.linux-x64\\5.0.10\\microsoft.netcore.app.host.linux-x64.5.0.10.nupkg.sha512"
-  ],
+  "projectFilePath": "C:\\Users\\May\\github\\c69_shell\\src\\c69_shell.csproj",
+  "expectedPackageFiles": [],
   "logs": []
 }

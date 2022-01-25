@@ -1,0 +1,9 @@
+func test name {
+    echo hello $name !
+}
+
+func test1 {
+    echo Name> 
+    input name
+    call test $name
+}

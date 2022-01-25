@@ -1,0 +1,15 @@
+C:\Users\May\github\c69_shell\src\bin\Debug\net6.0\c69_shell.exe
+C:\Users\May\github\c69_shell\src\bin\Debug\net6.0\c69_shell.deps.json
+C:\Users\May\github\c69_shell\src\bin\Debug\net6.0\c69_shell.runtimeconfig.json
+C:\Users\May\github\c69_shell\src\bin\Debug\net6.0\c69_shell.dll
+C:\Users\May\github\c69_shell\src\bin\Debug\net6.0\ref\c69_shell.dll
+C:\Users\May\github\c69_shell\src\bin\Debug\net6.0\c69_shell.pdb
+C:\Users\May\github\c69_shell\src\obj\Debug\net6.0\c69_shell.csproj.AssemblyReference.cache
+C:\Users\May\github\c69_shell\src\obj\Debug\net6.0\c69_shell.GeneratedMSBuildEditorConfig.editorconfig
+C:\Users\May\github\c69_shell\src\obj\Debug\net6.0\c69_shell.AssemblyInfoInputs.cache
+C:\Users\May\github\c69_shell\src\obj\Debug\net6.0\c69_shell.AssemblyInfo.cs
+C:\Users\May\github\c69_shell\src\obj\Debug\net6.0\c69_shell.csproj.CoreCompileInputs.cache
+C:\Users\May\github\c69_shell\src\obj\Debug\net6.0\c69_shell.dll
+C:\Users\May\github\c69_shell\src\obj\Debug\net6.0\ref\c69_shell.dll
+C:\Users\May\github\c69_shell\src\obj\Debug\net6.0\c69_shell.pdb
+C:\Users\May\github\c69_shell\src\obj\Debug\net6.0\c69_shell.genruntimeconfig.cache

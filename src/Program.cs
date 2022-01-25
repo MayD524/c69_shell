@@ -10,6 +10,8 @@ namespace c69_shell
     {
         static bool isAlive = true;
         static shellEnv env = null;
+        static List<string> currentFile = new List<string>();
+        static int filePos = 0;
 
         static void Main(string[] args)
         {
@@ -55,6 +57,37 @@ namespace c69_shell
             }
         }
         
+        static void scriptHandler(string scriptFile)
+        {
+            // check if the file exists
+            if ( !fileExists(scriptFile) )
+                throw new Exception(String.Format("File {0} does not exist", scriptFile));
+
+            // read the file
+            currentFile = readFile(scriptFile);
+            // remove comments
+            for (int i = 0; i < currentFile.Count; i++)
+            {
+                currentFile[i] = split(currentFile[i], '#')[0].Trim();
+            }
+            while (filePos < currentFile.Count)
+            {
+                try
+                {
+                    taskHandler(split(currentFile[filePos], ' '));
+                    env.setEnv("taskCount", (int.Parse(env.getVar("taskCount").value) + 1).ToString());
+                    env.taskHistory.Add(currentFile[filePos]);
+                    env.setEnv("lastTaskExitCode", "0");
+                }
+                catch (Exception e)
+                {
+                    Console.WriteLine(e.Message);
+                    env.setEnv("lastTaskExitCode", "1");
+                }
+                filePos++;
+            }
+        }
+
         static void taskHandler(List<string> task){
             // loop through the task
             List<envVar> buffer = new List<envVar>();
@@ -68,6 +101,85 @@ namespace c69_shell
             }
 
             switch (task[0].ToLower()) {
+                case "func":
+                    envFunction func = new envFunction();
+                    List<string> funcArgs = new List<string>();
+                    func.name = task[1];
+                    // see how many things till {
+                    int numArgs = 0;
+                    for (int i = 2; i < task.Count; i++)
+                    {
+                        if (task[i] == "{")
+                        {
+                            numArgs = i - 2;
+                            break;
+                        }
+                        funcArgs.Add(task[i]);
+                    }
+                    func.argNames = funcArgs;
+                    func.numArgs = numArgs;
+                    // get the lines between { and }
+                    List<string> funcLines = new List<string>();
+                    // get the lines between { and }
+                    filePos++;
+                    for (int i = filePos; i < currentFile.Count; i++)
+                    {
+                        if (currentFile[i].Trim() == "}")
+                        {
+                            filePos = i;
+                            break;
+                        }
+                        funcLines.Add(currentFile[i]);
+                    }
+
+                    func.code = funcLines;
+                    env.addFunction(func.name, func);           
+                    break;
+
+                case "call":
+                    // call a function
+                    if (task.Count < 2)
+                        throw new Exception("No function name given");
+                    if (env.funcExists(task[1]))
+                    {
+                        // get the function
+                        envFunction f = env.getFunction(task[1]);
+                        // get the arguments
+                        List<string> fargs = new List<string>();
+                        if(f.numArgs > 0)
+                        {
+                            for (int i = 2; i < task.Count; i++)
+                                fargs.Add(task[i]);
+                            
+                        }
+                        // check if the number of arguments is correct
+                        if (fargs.Count != f.numArgs)
+                            throw new Exception(String.Format("Function {0} requires {1} arguments but got {2}", f.name, f.numArgs, fargs.Count));
+
+                        // set the arguments
+                        if (f.numArgs > 0)
+                        {
+                            for (int i = 0; i < f.numArgs; i++)
+                                env.setEnv(f.argNames[i], fargs[i]);
+                            
+                        }
+                        // run the function
+                        foreach (string line in f.code)
+                            taskHandler(split(line, ' '));
+                        
+                        if (env.getVar("lastTaskExitCode").value != "0")
+                            throw new Exception(String.Format("Function {0} exited with code {1}", f.name, env.getVar("lastTaskExitCode").value));
+                        
+                        if (f.numArgs == 0)
+                            break;
+                        
+                        // reset the arguments
+                        foreach (string arg in f.argNames)
+                            env.removeVar(arg);
+                        
+                    }
+                    break;
+                
                 case "exec":
                     string args = "";
                     if (task.Count > 2)
@@ -77,6 +189,37 @@ namespace c69_shell
                     }
 
                     System.Diagnostics.Process.Start(task[1], args);
+                    break;
+
+                case "remfunc":
+                    if (task.Count < 2)
+                        throw new Exception("No function name given");
+                    if (env.funcExists(task[1]))
+                        env.removeFunction(task[1]);
+                    
+                    break;
+
+                case "input":
+                    
+                    string input = Console.ReadLine();
+                    if (task.Count == 1)
+                        Console.WriteLine(input);
+                    else if (task.Count > 1)
+                        env.setEnv(task[1], input);
+                    
+                    break;
+
+
+                case "load":
+                    if (task.Count <= 1)
+                        throw new Exception("load: missing file name");
+                    scriptHandler(task[1]);
+                    break;
+
+                case "rem":
+                    if (task.Count <= 1)
+                        throw new Exception("rem: missing variable name");
+                    env.removeVar(task[1]);
                     break;
 
                 case "env":
@@ -89,6 +232,17 @@ namespace c69_shell
                                 break;
                             case "read":
                                 env.readEnvFile(env.getVar("ENV_FILE").value);
+                                break;
+                            case "func":
+                                // dispaly all functions
+                                foreach (string funcName in env.getFuncNames()){
+                                    envFunction f = env.getFunction(funcName);
+                                    Console.WriteLine("{0}({1})", f.name, String.Join(", ", f.argNames));
+                                    Console.WriteLine("{");
+                                    foreach (string line in f.code)
+                                        Console.WriteLine("\t" + line);
+                                    Console.WriteLine("}");
+                                }
                                 break;
                         }
                         break;

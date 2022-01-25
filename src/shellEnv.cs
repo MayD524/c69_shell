@@ -11,6 +11,13 @@ namespace c69_shellEnv
         floatType
     };
 
+    struct envFunction {
+        public string name;
+        public int numArgs;
+        public List<string> argNames;
+        public List<string> code;
+    };
+
     struct envVar
     {
         public string name;
@@ -22,7 +29,8 @@ namespace c69_shellEnv
     class shellEnv
     {
         public List<string> taskHistory = new List<string>();
-        private static Dictionary<string, envVar> env = new Dictionary<string, envVar>();
+        public static Dictionary<string, envVar> env = new Dictionary<string, envVar>();
+        public static Dictionary<string, envFunction> functions = new Dictionary<string, envFunction>();
 
         public shellEnv(bool hasEnvFile=false)
         {
@@ -78,6 +86,48 @@ namespace c69_shellEnv
                 return env[key];
             }
             return env["NULL"];
+        }
+
+        public void addFunction(string name, envFunction func)
+        {
+            functions.Add(name, func);
+        }
+
+        public bool funcExists(string name)
+        {
+            return functions.ContainsKey(name);
+        }
+
+        public envFunction getFunction(string name)
+        {
+            if (functions.ContainsKey(name))
+            {
+                return functions[name];
+            }
+            return functions["NULL"];
+        }
+
+        public void loadFunction(List<string> code, string name, List<string> argNames)
+        {
+            envFunction func = new envFunction();
+            func.name = name;
+            func.numArgs = argNames.Count;
+            func.argNames = argNames;
+            func.code = code;
+            functions[name] = func;
+        }
+        public List<string> getFuncNames() {
+            List<string> names = new List<string>();
+            foreach (KeyValuePair<string, envFunction> entry in functions)
+            {
+                names.Add(entry.Key);
+            }
+            return names;
+        }
+
+        public void removeFunction(string name)
+        {
+            functions.Remove(name);
         }
 
         public void removeVar(string key)
