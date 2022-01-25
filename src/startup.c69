@@ -1,0 +1,3 @@
+func cd path {
+    set-pwd $path
+}

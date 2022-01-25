@@ -11,6 +11,7 @@ namespace c69_shell
         static bool isAlive = true;
         static shellEnv env = null;
         static List<string> currentFile = new List<string>();
+        static List<bool> logicChain = new List<bool>() { true };
         static int filePos = 0;
 
         static void Main(string[] args)
@@ -31,7 +32,11 @@ namespace c69_shell
             if (env.getVar("HOME").value == "")
                 env.setEnv("HOME", Directory.GetCurrentDirectory());
             
-
+            if (env.getVar("LOAD_ON_STARTUP").value == "1")
+            
+                // load the startup file
+                scriptHandler("./startup.c69");
+            
 
             // this should be in a while loop
             while(isAlive){
@@ -86,9 +91,31 @@ namespace c69_shell
                 }
                 filePos++;
             }
+
+            filePos = 0;
         }
 
         static void taskHandler(List<string> task){
+            // check the end of logicChain
+            if (logicChain.Count > 0 && !logicChain[logicChain.Count - 1])
+            {
+                if (task.Contains("end"))
+                {
+                    logicChain.RemoveAt(logicChain.Count - 1);
+                    return;
+                }
+                else if (task.Contains("else"))
+                {
+                    logicChain[logicChain.Count - 1] = true;
+                    return;
+                }
+                else if (task.Contains("elif"))
+                {
+                    task[task.IndexOf("elif")] = "if";
+                }
+                else
+                    return;
+            }
             // loop through the task
             List<envVar> buffer = new List<envVar>();
 
@@ -105,6 +132,8 @@ namespace c69_shell
                     envFunction func = new envFunction();
                     List<string> funcArgs = new List<string>();
                     func.name = task[1];
+                    if (env.funcExists(func.name))
+                        env.removeFunction(func.name);
                     // see how many things till {
                     int numArgs = 0;
                     for (int i = 2; i < task.Count; i++)
@@ -250,7 +279,7 @@ namespace c69_shell
                     env.listEnv();
                     break;
 
-                case "read":
+                case "read-file":
                     List<string> lines = readFile(task[1]);
                     if (!task.Contains("->"))
                     {
@@ -267,7 +296,51 @@ namespace c69_shell
                     buffer.Add(new envVar() { name = varName, value = slines, type = (int)types.stringType, isReadOnly = false });
                     break;
 
-                case "cd":
+                case "if":
+                    // start an if statement
+                    if (task.Count < 2)
+                        throw new Exception("if: missing condition");
+                    
+                    if (task[1].Contains("!"))
+                        logicChain.Add(task[1].Substring(1) == "0" ? true : false);
+                    else
+                        logicChain.Add(task[1] == "0" ? false : true);
+                    
+                    break;
+
+                case "end":
+                    if (logicChain.Count == 1)
+                        throw new Exception("end: no if statement found");
+                    logicChain.RemoveAt(logicChain.Count - 1);
+                    break;
+
+                case "item-exists":
+                    if (task.Count < 4)
+                        throw new Exception("item-exists: missing item name");
+                    switch (task[1]) {
+                        case "file":
+                            env.setEnv(task[3], (File.Exists(task[2]) ? "1" : "0"));
+                            break;
+
+                        case "dir":
+                            env.setEnv(task[3], (Directory.Exists(task[2]) ? "1" : "0"));
+                            break; 
+                        case "var":
+                            env.setEnv(task[3], (env.varExists(task[2]) ? "1" : "0"));
+                            break;
+                        case "func":
+                            env.setEnv(task[3], env.funcExists(task[2]) ? "1" : "0");
+                            break;
+                        default:
+                            throw new Exception("item-exists: unknown item type");
+                    }
+                    break;
+                
+                case "exit-func":
+                    env.setEnv("lastTaskExitCode", task[1]);
+                    break;
+
+                case "set-pwd":
                     if (task.Count > 1)
                     {
                         if (task[1] == "..")

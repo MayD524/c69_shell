@@ -55,7 +55,7 @@ namespace c69_shellEnv
             setEnv("lastTaskExitCode", "0");
         }
 
-        private int interpretType(string value) {
+        public int interpretType(string value) {
             // check if the value is a number
             if (value == "NULL") { return (int)types.nullType; }
             bool isFloat = float.TryParse(value, out float f);

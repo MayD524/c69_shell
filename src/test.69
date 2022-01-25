@@ -3,7 +3,14 @@ func test name {
 }
 
 func test1 {
-    echo Name> 
-    input name
-    call test $name
+    set a 1
+    set b $TRUE
+    if !$a
+        echo hi
+    elif $b
+        echo hhhhiiii
+    else
+        echo bye
+    end
+
 }
