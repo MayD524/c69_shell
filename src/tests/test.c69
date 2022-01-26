@@ -1,0 +1,66 @@
+func test_all {
+    ## clear test files
+    delete env\test.txt
+    delete env\tmp.txt
+    delete tmp.txt
+
+    echo hello $USER
+    make-file test.txt
+    item-exists file test.txt tmp
+    
+    if $tmp
+        file-write test.txt hello world!
+        file-read test.txt
+        echo did it print?
+    else 
+        echo file \test.txt failed
+        return 1
+    
+    end 
+    
+    rename test.txt tmp.txt
+    item-exists file tmp.txt tmp
+    
+    if $tmp
+        echo rename works
+        copy tmp.txt env\test.txt
+        item-exists file env\test.txt tmp
+        
+        if tmp
+            echo copy works
+        else 
+            echo copy no work
+            return 2
+        end
+
+        move tmp.txt env\tmp.txt
+        item-exists file env\tmp.txt tmp1
+        item-exists file tmp.txt tmp2
+        
+        if $tmp2
+            echo didn't remove origin
+            return 3
+        end
+
+        if !$tmp1
+            echo didn't make new file
+            return 3
+        end 
+        
+        delete env\tmp.txt
+        item-exists file env\tmp.txt tmp
+        
+        if $tmp
+            echo delete didn't work
+            return 4
+        else 
+            echo delete worked!
+        end
+    else
+        echo rename didn't work :,(
+        return 5
+    end
+    delete env\test.txt
+    echo done testing!
+    return 0
+}

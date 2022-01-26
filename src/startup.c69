@@ -1,3 +1,4 @@
-func cd path {
-    set-pwd $path
-}
+set-alias cd set-pwd
+set-alias return exit-func
+set-alias ls list-contents
+set-alias fread file-read

@@ -31,7 +31,7 @@ namespace c69_shellEnv
         public List<string> taskHistory = new List<string>();
         public static Dictionary<string, envVar> env = new Dictionary<string, envVar>();
         public static Dictionary<string, envFunction> functions = new Dictionary<string, envFunction>();
-
+        public static Dictionary<string, string> aliases = new Dictionary<string, string>();
         public shellEnv(bool hasEnvFile=false)
         {
             if (hasEnvFile)
@@ -116,6 +116,27 @@ namespace c69_shellEnv
             func.code = code;
             functions[name] = func;
         }
+        
+
+        public bool aliasExists(string name)
+        {
+            return aliases.ContainsKey(name);
+        }
+
+        public void setAlias(string name, string value)
+        {
+            if (aliasExists(name))
+                throw new Exception("Alias already exists");
+            aliases.Add(name, value);
+        }
+
+        public string getAlias(string name)
+        {
+            if (aliasExists(name))
+                return aliases[name];
+            throw new Exception("Alias does not exist");
+        }
+
         public List<string> getFuncNames() {
             List<string> names = new List<string>();
             foreach (KeyValuePair<string, envFunction> entry in functions)

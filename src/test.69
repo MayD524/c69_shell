@@ -1,16 +1,11 @@
-func test name {
-    echo hello $name !
-}
+func test {
 
-func test1 {
     set a 1
-    set b $TRUE
-    if !$a
-        echo hi
-    elif $b
-        echo hhhhiiii
+    echo $a$
+    if $a
+        echo gi
     else
-        echo bye
+        echo hi
     end
 
 }

@@ -32,7 +32,7 @@ namespace c69_shell
             if (env.getVar("HOME").value == "")
                 env.setEnv("HOME", Directory.GetCurrentDirectory());
             
-            if (env.getVar("LOAD_ON_STARTUP").value == "1")
+            if (env.getVar("LOAD_SETUP_SCRIPT").value == "1")
             
                 // load the startup file
                 scriptHandler("./startup.c69");
@@ -112,6 +112,7 @@ namespace c69_shell
                 else if (task.Contains("elif"))
                 {
                     task[task.IndexOf("elif")] = "if";
+                    logicChain.RemoveAt(logicChain.Count - 1);
                 }
                 else
                     return;
@@ -120,11 +121,16 @@ namespace c69_shell
             List<envVar> buffer = new List<envVar>();
 
             if (task[0] == "") { return; }
-
             for(int i = 0; i < task.Count; i++)
             {
+                
                 if (task[i].StartsWith("$") && env.varExists(task[i].Substring(1)))
+                { 
                     task[i] = env.getVar(task[i].Substring(1)).value;
+                }
+                else if (env.aliasExists(task[i]))
+                    task[i] = env.getAlias(task[i]);
+                
             }
 
             switch (task[0].ToLower()) {
@@ -165,6 +171,11 @@ namespace c69_shell
                     env.addFunction(func.name, func);           
                     break;
 
+                case "elif": break;
+                case "else": 
+                    logicChain[logicChain.Count - 1] = false;
+                    break;
+
                 case "call":
                     // call a function
                     if (task.Count < 2)
@@ -192,10 +203,14 @@ namespace c69_shell
                                 env.setEnv(f.argNames[i], fargs[i]);
                             
                         }
+                        env.setEnv("lastTaskExitCode", "null");
                         // run the function
                         foreach (string line in f.code)
+                        {
                             taskHandler(split(line, ' '));
-                        
+                            if (env.getVar("lastTaskExitCode").value != "null")
+                                break;
+                        }
                         if (env.getVar("lastTaskExitCode").value != "0")
                             throw new Exception(String.Format("Function {0} exited with code {1}", f.name, env.getVar("lastTaskExitCode").value));
                         
@@ -228,6 +243,12 @@ namespace c69_shell
                     
                     break;
 
+                case "set-alias":
+                    if (task.Count < 3)
+                        throw new Exception("No alias name given");
+                    env.setAlias(task[1], task[2]);
+                    break;
+
                 case "input":
                     
                     string input = Console.ReadLine();
@@ -237,7 +258,6 @@ namespace c69_shell
                         env.setEnv(task[1], input);
                     
                     break;
-
 
                 case "load":
                     if (task.Count <= 1)
@@ -279,7 +299,7 @@ namespace c69_shell
                     env.listEnv();
                     break;
 
-                case "read-file":
+                case "file-read":
                     List<string> lines = readFile(task[1]);
                     if (!task.Contains("->"))
                     {
@@ -294,6 +314,78 @@ namespace c69_shell
                         slines += line + "\n";
                     
                     buffer.Add(new envVar() { name = varName, value = slines, type = (int)types.stringType, isReadOnly = false });
+                    break;
+                case "rename":
+                    if(task[1].Contains("/")){
+                        if(task[2].Contains("/")){
+                            File.Copy(task[1],task[2]);
+                            File.Delete(task[1]);
+                        }else{
+                            
+                            goto stderr;
+                        }
+                    }else{    
+                        File.Copy(env.getVar("PWD").value+ "\\" + task[1],env.getVar("PWD").value+ "\\" + task[2]);
+                        File.Delete(env.getVar("PWD").value+ "\\" + task[1]);
+                    }
+                    break;
+                    
+                case "delete":
+                    if (task.Count <= 1)
+                        throw new Exception("delete: missing file name");
+                    else if(task[1].Contains("env.conf"))
+                        goto stderr;
+                    else{
+                        File.Delete(task[1]);
+
+                    }
+                    break;
+
+                case "copy":
+                    if(task[1].Contains("\\"))
+                        File.Copy(task[1],task[2]);
+                    else
+                        File.Copy(env.getVar("PWD").value+ "\\" + task[1],task[2]);
+                    break;
+
+                case "move":
+                    if (task.Count < 3)
+                        throw new Exception("move: missing file name");
+                    if (fileExists(task[1]))
+                    {
+                        if (task[2].Contains("\\"))
+                            File.Move(task[1], task[2]);
+                        else
+                            File.Move(env.getVar("PWD").value + "\\" + task[1], env.getVar("PWD").value + "\\" + task[2]);
+                    }
+                    else
+                        throw new Exception("move: file does not exist");
+                    break;
+                    
+                case "make-direcory":
+                    if (task.Count <= 1)
+                        throw new Exception("make-direcory: missing directory name");
+                    Directory.CreateDirectory(task[1]);
+                    break;
+                
+                case "make-file":
+                    if (task.Count <= 1)
+                        throw new Exception("make-file: missing file name");
+                    using (StreamWriter sw = File.CreateText(task[1]))
+                    {
+                        sw.Write("");
+                    }
+                    break;
+
+                case "file-write":
+                    if (task.Count <= 1)
+                        throw new Exception("file-write: missing file name");
+                    if (task.Count <= 2)
+                        throw new Exception("file-write: missing content");
+                    using (StreamWriter sw = File.AppendText(task[1]))
+                    {
+                        sw.WriteLine(task[2]);
+                    }
                     break;
 
                 case "if":
@@ -357,11 +449,7 @@ namespace c69_shell
                     // get the type of var
                     break;
 
-                case "cat":
-                    
-                    break;
-
-                case "ls":
+                case "list-contents":
                     // get a list of files and folders in the current directory
                     if (task.Count > 1)
                         lsCmd(task[1]);
@@ -391,6 +479,14 @@ namespace c69_shell
                         env.setEnv(task[1], value, isReadOnly);
                         break;
                     }
+                case "no":
+                    Console.WriteLine("No");
+                    goto stderr;
+
+                case "std-error":
+                    stderr:
+                        Console.WriteLine("char(69)");
+                        throw new Exception("you're stupid -_-");
 
                 case "echo":
                     if (task.Count >= 2)

@@ -1,22 +1,31 @@
 (Task pool)
 - Command list (handlers)
-- Extensions
-- dir. management
-- list directory (with sizes)
+- Plugins
+- dir. management (mkdir, rmdir)
+- file. management (mkfile, rmfile)
 - expanded tree
-- tab completion
+
+(Jerk pool)
 - rename file
 - delete file
 - move/copy file
 
 
-(Jerk pool)
-- User Input
-- Application execution
-- file read/write 
-- bulk file read/write
- 
 (May pool)
-- Environment variables (done)
-- file finding
+- boolean operations
+- bulk file read/write
+- file writing (append, write)
+- Extensions
+- alias
+- file finding 50%
+
+(Future)
+- tab completion
+
+Done
+- list directory (with sizes)
+- file reading
+- Application execution
 - history
+- Environment variables
+- User Input
