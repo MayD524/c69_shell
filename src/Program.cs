@@ -121,16 +121,27 @@ namespace c69_shell
             List<envVar> buffer = new List<envVar>();
 
             if (task[0] == "") { return; }
+
             for(int i = 0; i < task.Count; i++)
-            {
-                
-                if (task[i].StartsWith("$") && env.varExists(task[i].Substring(1)))
+            {                
+                if (task[0] != "set-alias" && task[i].StartsWith("$") && env.varExists(task[i].Substring(1)))
                 { 
                     task[i] = env.getVar(task[i].Substring(1)).value;
                 }
-                else if (env.aliasExists(task[i]))
+                else if ( (task[0] != "set-alias" || i > 1) &&  env.aliasExists(task[i]))
+                {
+                    // set the alias
                     task[i] = env.getAlias(task[i]);
-                
+                    if (task[i].Contains(" ")) {
+                        // split the alias into a list
+                        List<string> alias = split(task[i], ' ');
+                        // insert the alias into the task
+                        task.InsertRange(i + 1, alias);
+                        // remove the alias from the task
+                        task.RemoveAt(i);
+
+                    }
+                }
             }
 
             switch (task[0].ToLower()) {
@@ -243,14 +254,67 @@ namespace c69_shell
                     
                     break;
 
+                case "check-is":
+                    if (task.Count < 3)
+                        throw new Exception("No variable name given");
+                    envVar v = new envVar();
+                    v.name = task[1];
+
+                    switch(task[1]){
+                        case "null":
+                            v.value = task[2] == "NULL" ? "1" : "0";
+                            break;
+
+                        case "empty":
+                            v.value = task[2] == "" ? "1" : "0";
+                            break;
+
+                        case "equal":
+                            v.value = task[2] == task[3] ? "1" : "0";
+                            break;
+
+                        case "notequal":
+                            v.value = task[2] != task[3] ? "1" : "0";
+                            break;
+
+                        case "greater":
+                            v.value = Convert.ToInt32(task[2]) > Convert.ToInt32(task[3]) ? "1" : "0";
+                            break;
+
+                        case "less":
+                            v.value = Convert.ToInt32(task[2]) < Convert.ToInt32(task[3]) ? "1" : "0";
+                            break;
+
+                        case "greater-equal":
+                            v.value = Convert.ToInt32(task[2]) >= Convert.ToInt32(task[3]) ? "1" : "0";
+                            break;
+
+                        case "less-equal":
+                            v.value = Convert.ToInt32(task[2]) <= Convert.ToInt32(task[3]) ? "1" : "0";
+                            break;
+
+                        case "in":
+                            v.value = task[2].Contains(task[3]) ? "1" : "0";
+                            break;
+                    }
+                    // check if '->' is used
+                    if (task.Contains("->"))
+                    {
+                        buffer.Add(v);
+                        break;
+                    }
+                    Console.WriteLine(v.value);
+                    break;
+
                 case "set-alias":
                     if (task.Count < 3)
                         throw new Exception("No alias name given");
-                    env.setAlias(task[1], task[2]);
+                    if (env.aliasExists(task[1]))
+                        env.removeAlias(task[1]);
+                    env.addAlias(task[1], String.Join(" ", task.GetRange(2, task.Count - 2)));
                     break;
 
                 case "input":
-                    
                     string input = Console.ReadLine();
                     if (task.Count == 1)
                         Console.WriteLine(input);

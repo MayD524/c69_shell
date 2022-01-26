@@ -1,11 +1,13 @@
 func test {
-
-    set a 1
-    echo $a$
-    if $a
-        echo gi
+    check-is equal $USER my -> tmp
+    check-is equal $USER may
+    if $tmp
+        echo hello
     else
-        echo hi
+        echo goodbye
     end
-
+    return 0
 }
+
+set-alias t call test
+echo hello

@@ -123,10 +123,18 @@ namespace c69_shellEnv
             return aliases.ContainsKey(name);
         }
 
-        public void setAlias(string name, string value)
+        public void removeAlias(string name)
+        {
+            aliases.Remove(name);
+        }
+
+        public void addAlias(string name, string value)
         {
             if (aliasExists(name))
-                throw new Exception("Alias already exists");
+            {
+                aliases[name] = value;
+                return;
+            }
             aliases.Add(name, value);
         }
 
