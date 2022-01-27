@@ -23,11 +23,6 @@ namespace c69_shell
             }
             
             Console.WriteLine("Welcome to the C#69 Shell!\nAuthors: May & Sweden");
-            if (env.getVar("USER").value == "")
-            {
-                Console.Write("Please enter your username: ");
-                env.setEnv("USER", Console.ReadLine());
-            }
 
             if (env.getVar("HOME").value == "")
                 env.setEnv("HOME", Directory.GetCurrentDirectory());
@@ -61,6 +56,8 @@ namespace c69_shell
                 }
             }
         }
+
+        
         
         static void scriptHandler(string scriptFile)
         {
@@ -142,6 +139,11 @@ namespace c69_shell
 
                     }
                 }
+                else if (task[0] != "set-alias" && env.funcExists(task[i]) && task[0] != "call")
+                {
+                    // add call to task[0]
+                    task.Insert(0, "call");
+                }
             }
 
             switch (task[0].ToLower()) {
@@ -200,8 +202,15 @@ namespace c69_shell
                         if(f.numArgs > 0)
                         {
                             for (int i = 2; i < task.Count; i++)
-                                fargs.Add(task[i]);
-                            
+                            {
+                                if (f.numArgs > i - 2)
+                                    fargs.Add(task[i]);
+                                else {
+                                    // join the rest of the arguments
+                                    fargs.Add(string.Join(" ", task.GetRange(i, task.Count - i)));
+                                }
+                                
+                            }
                         }
                         // check if the number of arguments is correct
                         if (fargs.Count != f.numArgs)
@@ -222,7 +231,7 @@ namespace c69_shell
                             if (env.getVar("lastTaskExitCode").value != "null")
                                 break;
                         }
-                        if (env.getVar("lastTaskExitCode").value != "0")
+                        if (env.getVar("lastTaskExitCode").value != "0" || env.getVar("lastTaskExitCode").value != "null")
                             throw new Exception(String.Format("Function {0} exited with code {1}", f.name, env.getVar("lastTaskExitCode").value));
                         
                         if (f.numArgs == 0)
@@ -314,7 +323,7 @@ namespace c69_shell
                     env.addAlias(task[1], String.Join(" ", task.GetRange(2, task.Count - 2)));
                     break;
 
-                case "input":
+                case "user-input":
                     string input = Console.ReadLine();
                     if (task.Count == 1)
                         Console.WriteLine(input);
@@ -552,7 +561,7 @@ namespace c69_shell
                         Console.WriteLine("char(69)");
                         throw new Exception("you're stupid -_-");
 
-                case "echo":
+                case "print-console":
                     if (task.Count >= 2)
                     {
                         string output = "";
@@ -562,11 +571,11 @@ namespace c69_shell
                             if (task[i] == "->") { break;}
                             output += task[i] + " ";
                         }
-                        Console.WriteLine(output);
-                        buffer.Add(new envVar(){ name = "echo", value = output, type = (int)types.stringType, isReadOnly = true});
+                        Console.Write(enableEscapeChars(output));
+                        buffer.Add(new envVar(){ name = "print-console", value = output, type = (int)types.stringType, isReadOnly = true});
                     }
                     else
-                        throw new Exception("echo: too few arguments");
+                        throw new Exception("print-console: too few arguments");
                     break;
 
                 case "exit":

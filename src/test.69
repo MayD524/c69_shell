@@ -1,6 +1,5 @@
 func test {
-    check-is equal $USER my -> tmp
-    check-is equal $USER may
+    check-is equal $USER ma -> tmp
     if $tmp
         echo hello
     else
@@ -9,5 +8,4 @@ func test {
     return 0
 }
 
-set-alias t call test
 echo hello

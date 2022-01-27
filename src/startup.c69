@@ -1,4 +1,32 @@
+## aliases
 set-alias cd set-pwd
+set-alias function func
 set-alias return exit-func
 set-alias ls list-contents
 set-alias fread file-read
+
+load common/io.c69
+
+func save_env {
+    set outCode 0
+    check-is null $ENV_FILE -> envExists
+    
+    if envExists
+        echo saving env... 
+        env out
+        echo saved env...
+    else
+        echo The env file does not exist
+
+    rem envExists
+}
+
+## check if the user exists
+check-is empty $USER -> noUser
+
+if noUser
+    call input USER Enter a username: 
+    print-console \n
+else
+    echo Welcome back $USER
+end

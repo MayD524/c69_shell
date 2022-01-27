@@ -19,6 +19,15 @@ namespace c69_shellTools
             return String.Format("{0:0.##} {1}", sizeBytes, sizes[order]);
         }
 
+        public static string enableEscapeChars(string inp){
+            inp = inp.Replace("\\n", "\n");
+            inp = inp.Replace("\\t", "\t");
+            inp = inp.Replace("\\r", "\r");
+            inp = inp.Replace("\\\"", "\"");
+            inp = inp.Replace("\\\'", "\'");
+            return inp;
+        }
+
         public static void lsCmd(string path)
         {
             if (path == "")

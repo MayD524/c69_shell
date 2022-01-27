@@ -4,25 +4,34 @@
 - dir. management (mkdir, rmdir)
 - file. management (mkfile, rmfile)
 - expanded tree
+- multi User
+- groups
+- delay (task scheduler)
+- file. permissions
+- variable calls
+
+(Bugs)
+- Application exec (kinda fucks everything)
+
 
 (Jerk pool)
-- rename file
-- delete file
-- move/copy file
 
 
 (May pool)
-- boolean operations
 - bulk file read/write
-- file writing (append, write)
 - Extensions
-- alias
 - file finding 50%
 
 (Future)
 - tab completion
 
 Done
+- boolean operations
+- file writing (append, write)
+- alias
+- rename file
+- delete file
+- move/copy file
 - list directory (with sizes)
 - file reading
 - Application execution
