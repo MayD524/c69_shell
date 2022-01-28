@@ -74,7 +74,8 @@ namespace c69_shell
             }
             while (filePos < currentFile.Count)
             {
-                Console.WriteLine(scriptFile + "<" + filePos + "> :: " + currentFile[filePos]);
+                if (env.getVar("DEBUG_MODE").value == "1")
+                    Console.WriteLine(scriptFile + "<" + filePos + "> :: " + currentFile[filePos]);
                 try
                 {
                     taskHandler(split(currentFile[filePos], ' '));
@@ -120,10 +121,9 @@ namespace c69_shell
             List<envVar> buffer = new List<envVar>();
 
             if (task[0] == "") { return; }
-
             for(int i = 0; i < task.Count; i++)
             {                
-                
+
                 if (task[0] != "set-alias" && task[i].StartsWith("$") && env.varExists(task[i].Substring(1)))
                 { 
                     task[i] = env.getVar(task[i].Substring(1)).value;
@@ -148,6 +148,7 @@ namespace c69_shell
                     task.Insert(0, "call");
                 }
             }
+
 
             switch (task[0].ToLower()) {
                 case "}": break;
@@ -208,22 +209,16 @@ namespace c69_shell
                         {
                             if (task.Count - 2 < f.numArgs)
                                 throw new Exception("Not enough arguments given");
-                            else if (task.Count - 2 == f.numArgs) {
-                                for (int i = 2; i < task.Count; i++)
-                                {
-                                    fargs.Add(task[i]);
-                                }
-                            }
+
                             for (int i = 2; i < task.Count; i++)
                             {
-                                if (task.Count - 2 > f.numArgs && i - 2 < f.numArgs)
-                                    fargs.Add(task[i]);
-                                else {
-                                    fargs.Add(String.Join(" ", task.GetRange(i, task.Count - i)));
-                                    break;
-                                }
+                                fargs.Add(task[i]);
                             }
                         }
+
+                        //Console.WriteLine("Calling function " + task[1]);
+                        //Console.WriteLine("Arguments:\n" + String.Join("\n", fargs));
+
                         // check if the number of arguments is correct
                         if (fargs.Count != f.numArgs)
                             throw new Exception(String.Format("Function {0} requires {1} arguments but got {2}", f.name, f.numArgs, fargs.Count));
@@ -243,7 +238,7 @@ namespace c69_shell
                             if (env.getVar("lastTaskExitCode").value != "null")
                                 break;
                         }
-                        if (env.getVar("lastTaskExitCode").value != "0" || env.getVar("lastTaskExitCode").value != "null")
+                        if (env.getVar("lastTaskExitCode").value != "0" && env.getVar("lastTaskExitCode").value != "null")
                             throw new Exception(String.Format("Function {0} exited with code {1}", f.name, env.getVar("lastTaskExitCode").value));
                         
                         if (f.numArgs == 0)
@@ -532,6 +527,7 @@ namespace c69_shell
 
                 case "type":
                     // get the type of var
+                    throw new Exception("type: not implemented");
                     break;
 
                 case "list-contents":

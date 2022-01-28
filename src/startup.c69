@@ -11,11 +11,11 @@ func save_env {
     check-is null $ENV_FILE -> envExists
     
     if envExists
-        echo saving env... 
+        echo "saving env..."
         env out
-        echo saved env...
+        echo "saved env..."
     else
-        echo The env file does not exist
+        echo "The env file does not exist"
 
     rem envExists
 }
@@ -24,8 +24,10 @@ func save_env {
 check-is empty $USER -> noUser
 echo $noUser
 if noUser
-    input USER Enter a username: 
+    set newUser Enter a username: 
+    input USER newUser
     print-console \n
 else
-    echo Welcome back $USER
+    set welcomeMsg Welcome back $USER
+    echo $welcomeMsg
 end

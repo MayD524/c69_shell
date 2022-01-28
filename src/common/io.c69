@@ -6,6 +6,7 @@ func input ret prompt {
     user-input $ret
     return 0
 }
+
 func echo txt {
     print-console $txt
     print-console \n

@@ -12,7 +12,8 @@
 
 (Bugs)
 - Application exec (kinda fucks everything)
-
+- Input issue
+- Print issue
 
 (Jerk pool)
 
@@ -21,6 +22,12 @@
 - bulk file read/write
 - Extensions
 - file finding 50%
+- arg parsing to function
+
+[ex]
+- input (return) (prompt)
+- [doesnt do what it should]
+- returns: (return) (prompt)
 
 (Future)
 - tab completion
