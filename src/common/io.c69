@@ -1,10 +1,13 @@
 
+
+func input ret prompt {
+    echo here
+    print-console $prompt
+    user-input $ret
+    return 0
+}
 func echo txt {
     print-console $txt
     print-console \n
-}
-
-func input ret prompt {
-    print-console $prompt
-    user-input $ret
+    return 0
 }

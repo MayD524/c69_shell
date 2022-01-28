@@ -56,15 +56,15 @@ namespace c69_shell
                 }
             }
         }
-
-        
         
         static void scriptHandler(string scriptFile)
         {
+            int lastFilePos = filePos;
+            List<string> lastScript = currentFile;
+            filePos = 0;
             // check if the file exists
             if ( !fileExists(scriptFile) )
                 throw new Exception(String.Format("File {0} does not exist", scriptFile));
-
             // read the file
             currentFile = readFile(scriptFile);
             // remove comments
@@ -74,6 +74,7 @@ namespace c69_shell
             }
             while (filePos < currentFile.Count)
             {
+                Console.WriteLine(scriptFile + "<" + filePos + "> :: " + currentFile[filePos]);
                 try
                 {
                     taskHandler(split(currentFile[filePos], ' '));
@@ -86,10 +87,11 @@ namespace c69_shell
                     Console.WriteLine(e.Message);
                     env.setEnv("lastTaskExitCode", "1");
                 }
+                    
                 filePos++;
             }
-
-            filePos = 0;
+            filePos = lastFilePos;
+            currentFile = lastScript;
         }
 
         static void taskHandler(List<string> task){
@@ -121,11 +123,12 @@ namespace c69_shell
 
             for(int i = 0; i < task.Count; i++)
             {                
+                
                 if (task[0] != "set-alias" && task[i].StartsWith("$") && env.varExists(task[i].Substring(1)))
                 { 
                     task[i] = env.getVar(task[i].Substring(1)).value;
                 }
-                else if ( (task[0] != "set-alias" || i > 1) &&  env.aliasExists(task[i]))
+                else if ( (task[0] != "set-alias" || i > 1) && task[0] != "func" &&  env.aliasExists(task[i]))
                 {
                     // set the alias
                     task[i] = env.getAlias(task[i]);
@@ -139,7 +142,7 @@ namespace c69_shell
 
                     }
                 }
-                else if (task[0] != "set-alias" && env.funcExists(task[i]) && task[0] != "call")
+                else if (task[0] != "set-alias" && env.funcExists(task[i]) && task[0] != "call" && task[0] != "func")
                 {
                     // add call to task[0]
                     task.Insert(0, "call");
@@ -147,6 +150,7 @@ namespace c69_shell
             }
 
             switch (task[0].ToLower()) {
+                case "}": break;
                 case "func":
                     envFunction func = new envFunction();
                     List<string> funcArgs = new List<string>();
@@ -169,6 +173,7 @@ namespace c69_shell
                     // get the lines between { and }
                     List<string> funcLines = new List<string>();
                     // get the lines between { and }
+                    
                     filePos++;
                     for (int i = filePos; i < currentFile.Count; i++)
                     {
@@ -201,15 +206,22 @@ namespace c69_shell
                         List<string> fargs = new List<string>();
                         if(f.numArgs > 0)
                         {
+                            if (task.Count - 2 < f.numArgs)
+                                throw new Exception("Not enough arguments given");
+                            else if (task.Count - 2 == f.numArgs) {
+                                for (int i = 2; i < task.Count; i++)
+                                {
+                                    fargs.Add(task[i]);
+                                }
+                            }
                             for (int i = 2; i < task.Count; i++)
                             {
-                                if (f.numArgs > i - 2)
+                                if (task.Count - 2 > f.numArgs && i - 2 < f.numArgs)
                                     fargs.Add(task[i]);
                                 else {
-                                    // join the rest of the arguments
-                                    fargs.Add(string.Join(" ", task.GetRange(i, task.Count - i)));
+                                    fargs.Add(String.Join(" ", task.GetRange(i, task.Count - i)));
+                                    break;
                                 }
-                                
                             }
                         }
                         // check if the number of arguments is correct

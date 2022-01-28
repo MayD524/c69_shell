@@ -1,6 +1,5 @@
 ## aliases
 set-alias cd set-pwd
-set-alias function func
 set-alias return exit-func
 set-alias ls list-contents
 set-alias fread file-read
@@ -23,9 +22,9 @@ func save_env {
 
 ## check if the user exists
 check-is empty $USER -> noUser
-
+echo $noUser
 if noUser
-    call input USER Enter a username: 
+    input USER Enter a username: 
     print-console \n
 else
     echo Welcome back $USER
