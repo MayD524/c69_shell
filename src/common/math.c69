@@ -1,0 +1,28 @@
+
+func pow base pwr {
+    set pow.ret $base
+    loop 0 $pwr 1
+        mul $pow.ret $base
+        set pow.ret $lastTaskExitCode
+    loop-end
+    return $pow.ret
+}
+
+func add obj1 obj2 {
+    math add $obj1 $obj2 -> add.ret
+}
+
+func sub obj1 obj2 {
+    math sub $obj1 $obj2 -> sub.ret
+    return $obj1
+}
+
+func mul obj1 obj2 {
+    math mul $obj1 $obj2 -> mul.ret
+    return $obj1
+}
+
+func div obj1 obj2 {
+    math div $obj1 $obj2 -> div.ret
+    return $obj1
+}

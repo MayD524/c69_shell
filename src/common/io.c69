@@ -1,7 +1,6 @@
 
 
 func input ret prompt {
-    echo here
     print-console $prompt
     user-input $ret
     return 0

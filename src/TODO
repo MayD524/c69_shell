@@ -1,19 +1,17 @@
 (Task pool)
 - Command list (handlers)
 - Plugins
-- dir. management (mkdir, rmdir)
-- file. management (mkfile, rmfile)
+- file management (mkfile, rmfile)
 - expanded tree
 - multi User
 - groups
-- delay (task scheduler)
+- loops
 - file. permissions
 - variable calls
 
+## Python Support 
+https://betterprogramming.pub/running-python-script-from-c-and-working-with-the-results-843e68d230e5
 (Bugs)
-- Application exec (kinda fucks everything)
-- Input issue
-- Print issue
 
 (Jerk pool)
 
@@ -21,18 +19,21 @@
 (May pool)
 - bulk file read/write
 - Extensions
-- file finding 50%
 - arg parsing to function
+- file finding 50%
+- delay (task scheduler)
+- arrays
 
 [ex]
 - input (return) (prompt)
-- [doesnt do what it should]
 - returns: (return) (prompt)
 
 (Future)
 - tab completion
 
 Done
+- dir management (mkdir, rmdir)
+- Application exec (kinda fucks everything)
 - boolean operations
 - file writing (append, write)
 - alias

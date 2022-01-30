@@ -26,10 +26,19 @@ namespace c69_shellEnv
         public bool   isReadOnly;
     }
 
+    struct envBlock 
+    {
+        public string name;
+        public List<string> code;
+
+    }
+
     class shellEnv
     {
         public List<string> taskHistory = new List<string>();
+        public static Dictionary<string, envBlock> blocks = new Dictionary<string, envBlock>();
         public static Dictionary<string, envVar> env = new Dictionary<string, envVar>();
+        public static Dictionary<string, List<envVar>> envArray = new Dictionary<string, List<envVar>>();
         public static Dictionary<string, envFunction> functions = new Dictionary<string, envFunction>();
         public static Dictionary<string, string> aliases = new Dictionary<string, string>();
         public shellEnv(bool hasEnvFile=false)
@@ -65,6 +74,41 @@ namespace c69_shellEnv
             return (int) types.stringType;
         }
 
+        public bool blockExists(string key)
+        {
+            return blocks.ContainsKey(key);
+        }
+
+        public envBlock getBlock(string key)
+        {
+            if (blockExists(key))
+                return blocks[key];
+            throw new Exception("Block does not exist");
+        }
+
+        public void removeBlock(string key)
+        {
+            if (blockExists(key))
+                blocks.Remove(key);
+            else
+                throw new Exception("Block does not exist");
+        }
+
+        public void setBlock(string key, envBlock block)
+        {
+            if (blockExists(key))
+                blocks[key] = block;
+            else
+                blocks.Add(key, block);
+        }
+
+        public List<string> getBlockNames() {
+            List<string> names = new List<string>();
+            foreach (string key in blocks.Keys)
+                names.Add(key);
+            return names;
+        }
+
         public bool varExists(string key)
         {
             return env.ContainsKey(key);
@@ -91,6 +135,16 @@ namespace c69_shellEnv
         public void addFunction(string name, envFunction func)
         {
             functions.Add(name, func);
+        }
+
+        public List<string> getAliasNames()
+        {
+            List<string> names = new List<string>();
+            foreach (string name in aliases.Keys)
+            {
+                names.Add(name);
+            }
+            return names;
         }
 
         public bool funcExists(string name)
@@ -189,6 +243,98 @@ namespace c69_shellEnv
             }
         }
 
+        public envVar makeVar(string name, string value, bool isReadonly = false)
+        {
+            envVar v = new envVar();
+            v.name = name;
+            v.value = value;
+            v.isReadOnly = false;
+            v.type = interpretType(value);
+            return v;
+        }
+
+        // array stuff
+
+        public bool arrayExists (string name)
+        {
+            return envArray.ContainsKey(name);
+        }
+
+        public envVar getArrayByIndex (string arrayname, int index)
+        {
+            return envArray[arrayname][index];
+        }
+
+        public envVar getArrayByName (string arrayname, string name)
+        {
+            return getArrayByIndex(arrayname, getArrayIndex(arrayname, name));
+        }
+
+        public int getArraySize (string arrayname)
+        {
+            return envArray[arrayname].Count;
+        }
+
+        public int getArrayIndex (string arrayname, string key)
+        {
+            for (int i = 0; i < envArray[arrayname].Count; i++)
+            {
+                if (envArray[arrayname][i].name == key)
+                {
+                    return i;
+                }
+            }
+            return -1;
+        }
+
+        public void setArrayByIndex (string arrayname, int index, string name, string value)
+        {
+            if (!arrayExists(arrayname))
+                throw new Exception(String.Format("Array {0} does not exist", arrayname));
+            envArray[arrayname][index] = makeVar(name, value);
+        }
+        
+
+        public List<envVar> getArray (string arrayname)
+        {
+            if (!arrayExists(arrayname))
+                throw new Exception(String.Format("Array {0} does not exist", arrayname));
+            return envArray[arrayname];
+        }
+
+        public void arrayAppend(string arrayname, string key, string value)
+        {
+            if (!arrayExists(arrayname))
+                throw new Exception(String.Format("Array {0} does not exist", arrayname));
+            
+            envArray[arrayname].Add(makeVar(key, value));
+        }
+
+        public void removeByIndex(string arrayname, int index)
+        {
+            if (!arrayExists(arrayname))
+                throw new Exception(String.Format("Array {0} does not exist", arrayname));
+
+            envArray[arrayname].RemoveAt(index);
+        } 
+
+        public void arrayRemove(string arrayname, string key) 
+        {
+            if (!arrayExists(arrayname))
+                throw new Exception(String.Format("Array {0} does not exist", arrayname));
+
+            int index = getArrayIndex(arrayname, key);
+            if (index == -1)
+                throw new Exception(String.Format("Array {0} does not contain key {1}", arrayname, key));
+
+            envArray[arrayname].RemoveAt(index);
+        }
+
+        public void makeArray(string arrayName)
+        {
+            envArray.Add(arrayName, new List<envVar>());
+        }
+
         public void writeEnvFile(string fileName)
         {
             List<string> lines = new List<string>();
@@ -207,11 +353,7 @@ namespace c69_shellEnv
                 return;
             }
 
-            envVar var = new envVar();
-            var.name = key;
-            var.value = value;
-            var.type = interpretType(value);
-            var.isReadOnly = isReadonly;
+            envVar var = makeVar(key, value, isReadonly);
             if (varExists(key))
                 env.Remove(key);
             

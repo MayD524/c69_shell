@@ -1,0 +1,15 @@
+load common/array.c69
+
+makeArray test_array
+
+append test_array t "hello world"
+
+arrayGet test_array t out
+arraySize test_array o
+echo $o
+indexOf test_array t t_index
+echo $t_index
+arrayRemove test_array t $t_index
+arraySize test_array o
+echo $out
+echo $o

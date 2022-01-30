@@ -1,0 +1,25 @@
+{
+    "name": "c69-script",
+    "displayName": "C69 Script",
+    "description": "Syntax highlighting for c69 script",
+    "version": "0.0.1",
+    "engines": {
+        "vscode": "^1.63.0"
+    },
+    "categories": [
+        "Programming Languages"
+    ],
+    "contributes": {
+        "languages": [{
+            "id": "c69",
+            "aliases": ["c69", "c69"],
+            "extensions": [".c69", ".69"],
+            "configuration": "./language-configuration.json"
+        }],
+        "grammars": [{
+            "language": "c69",
+            "scopeName": "source.c69",
+            "path": "./syntaxes/c69.tmLanguage.json"
+        }]
+    }
+}

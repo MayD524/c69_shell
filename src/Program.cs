@@ -1,5 +1,6 @@
 ﻿using static c69_shellTools.c69_shellTools;
 using System.Collections.Generic;
+using System.Threading;
 using c69_shellEnv;
 using System.IO;
 using System;
@@ -9,13 +10,21 @@ namespace c69_shell
     class Program
     {
         static bool isAlive = true;
+        
         static shellEnv env = null;
+        static List<int> loopStart = new List<int>();
+        static List<int> loopEnd = new List<int>();
+        static List<int> loopStep = new List<int>();
+        static List<int> loopIndex = new List<int>();
+        static List<int> loopCurrentIndex = new List<int>();
+
         static List<string> currentFile = new List<string>();
         static List<bool> logicChain = new List<bool>() { true };
         static int filePos = 0;
 
         static void Main(string[] args)
-        {
+        {   
+
             if (env == null)
             {
                 // check if the env file exists
@@ -35,6 +44,7 @@ namespace c69_shell
 
             // this should be in a while loop
             while(isAlive){
+                updatePrompt();
                 Console.Write(env.getVar("PROMPT").value);
                 env.setEnv("PWD", Directory.GetCurrentDirectory());
                 string input = Console.ReadLine();
@@ -57,6 +67,47 @@ namespace c69_shell
             }
         }
         
+
+        static void callFunction(envFunction func, List<string> args)
+        {
+            if (func.numArgs != args.Count)
+                throw new Exception(String.Format("Function {0} expects {1} arguments, but {2} were given", func.name, func.numArgs, args.Count));
+            
+            // check if the number of arguments is correct
+            if (func.numArgs > 0)
+            {
+                for (int i = 0; i < func.numArgs; i++)
+                    env.setEnv(func.argNames[i], args[i]);
+            }
+
+            string funcReturnCode = String.Format("{0}_return", func.name);
+
+            env.setEnv("lastTaskExitCode", "-9999999999999999999999");
+
+            foreach(string line in func.code)
+            {
+                taskHandler(split(line, ' '));
+                if (env.getVar("lastTaskExitCode").value != "-9999999999999999999999")
+                    break;
+            }
+
+            //if (env.getVar("lastTaskExitCode").value != "0" && env.getVar("lastTaskExitCode").value != "null")
+            //    throw new Exception(String.Format("Function {0} exited with exit code {1}", func.name, env.getVar("lastTaskExitCode").value));
+
+            if (func.numArgs == 0)
+                return;
+            
+            foreach (string arg in func.argNames)
+                env.removeVar(arg);
+        }
+
+        static void updatePrompt() {
+            if (!env.funcExists("setPrompt"))
+                throw new Exception("setPrompt() function not found");
+            envFunction func = env.getFunction("setPrompt");
+            callFunction(func, new List<string>());
+        }
+        
         static void scriptHandler(string scriptFile)
         {
             int lastFilePos = filePos;
@@ -70,6 +121,7 @@ namespace c69_shell
             // remove comments
             for (int i = 0; i < currentFile.Count; i++)
             {
+                // remove #
                 currentFile[i] = split(currentFile[i], '#')[0].Trim();
             }
             while (filePos < currentFile.Count)
@@ -95,8 +147,83 @@ namespace c69_shell
             currentFile = lastScript;
         }
 
+        static List<string> taskParse(List<string> task_data) {
+            List<string> retTaskData = new List<string>();
+            bool inString = false;
+            string currentString = "";
+            if (task_data.Count == 0)
+                return retTaskData;
+            // don't do anything to these (will cause issues otherwise)
+            if (task_data[0] == "set-alias" || task_data[0] == "func")
+                return task_data;
+
+            for(int i = 0; i < task_data.Count; i++)
+            {
+                if (task_data[i].Contains("\"") || inString)
+                {
+                    if (task_data[i].Contains("\""))
+                    {
+                        inString = !inString;
+                        if (task_data[i].EndsWith("\""))
+                            inString = false;
+                        
+                        currentString += task_data[i].Replace("\"", "") + " ";
+                        if (!inString) {
+                            retTaskData.Add(currentString);
+                            currentString = "";
+                        }
+                    }
+                    else
+                    {
+                        currentString += task_data[i] + " ";
+                    }
+                }
+                else if (env.aliasExists(task_data[i]))
+                {
+                    retTaskData.Add(env.getAlias(task_data[i]));
+                }
+
+                else if (task_data[0] != "call" && env.funcExists(task_data[i]))
+                {
+                    retTaskData.Insert(0, "call");
+                    retTaskData.Add(task_data[i]);
+                }
+                else if (task_data[i].StartsWith("$"))
+                {
+                    task_data[i] = task_data[i].Substring(1);
+                    if (task_data[i].Contains("$"))
+                    {
+                        List<string> tmp = split(task_data[i], '$');
+                        if (env.varExists(tmp[0]))
+                        {
+                            retTaskData.Add(env.getVar(tmp[0]).value + tmp[1].Replace("$", ""));
+                            continue;
+                        }
+                        
+                        retTaskData.Add(task_data[i]);
+                        
+                        continue;
+                    }
+                    if (env.varExists(task_data[i]))
+                        retTaskData.Add(env.getVar(task_data[i]).value);
+                    
+                    else
+                        retTaskData.Add(task_data[i]);
+                    
+                }
+
+                else
+                    retTaskData.Add(task_data[i]);
+                
+            }
+            return retTaskData;
+        }
+
         static void taskHandler(List<string> task){
             // check the end of logicChain
+            if (task.Count == 0 ) { return; }
+            if (task[0]    == "") { return; }
+            task = taskParse(task);
             if (logicChain.Count > 0 && !logicChain[logicChain.Count - 1])
             {
                 if (task.Contains("end"))
@@ -119,36 +246,6 @@ namespace c69_shell
             }
             // loop through the task
             List<envVar> buffer = new List<envVar>();
-
-            if (task[0] == "") { return; }
-            for(int i = 0; i < task.Count; i++)
-            {                
-
-                if (task[0] != "set-alias" && task[i].StartsWith("$") && env.varExists(task[i].Substring(1)))
-                { 
-                    task[i] = env.getVar(task[i].Substring(1)).value;
-                }
-                else if ( (task[0] != "set-alias" || i > 1) && task[0] != "func" &&  env.aliasExists(task[i]))
-                {
-                    // set the alias
-                    task[i] = env.getAlias(task[i]);
-                    if (task[i].Contains(" ")) {
-                        // split the alias into a list
-                        List<string> alias = split(task[i], ' ');
-                        // insert the alias into the task
-                        task.InsertRange(i + 1, alias);
-                        // remove the alias from the task
-                        task.RemoveAt(i);
-
-                    }
-                }
-                else if (task[0] != "set-alias" && env.funcExists(task[i]) && task[0] != "call" && task[0] != "func")
-                {
-                    // add call to task[0]
-                    task.Insert(0, "call");
-                }
-            }
-
 
             switch (task[0].ToLower()) {
                 case "}": break;
@@ -195,6 +292,142 @@ namespace c69_shell
                     logicChain[logicChain.Count - 1] = false;
                     break;
 
+                case "block":
+                    envBlock block = new envBlock();
+                    block.name = task[1];
+                    if (env.blockExists(block.name))
+                        env.removeBlock(block.name);
+                    List<string> blockCode = new List<string>();
+                    // loop through the lines
+                    for (int i = filePos + 1; i < currentFile.Count; i++)
+                    {
+                        if (currentFile[i].Trim() == "block-end")
+                        {
+                            filePos = i;
+                            break;
+                        }
+                        blockCode.Add(currentFile[i]);
+                    }
+                    // check the last line for a goto-end
+                    if (blockCode[blockCode.Count - 1].Trim() != "goto-end")
+                        blockCode.Add("goto-end");
+                    
+                    block.code = blockCode;
+                    env.setBlock(block.name, block);
+                    break;
+
+                case "inc-var":
+                    if (task.Count < 2)
+                        throw new Exception("inc-var requires 1 arguments");
+                    if (!env.varExists(task[1]))
+                        throw new Exception(String.Format("inc-var: {0} does not exist", task[1]));
+
+                    envVar tmp = env.getVar(task[1]); 
+                    
+                    if (tmp.type == (int) types.intType)
+                        tmp.value = (int.Parse(tmp.value) + 1).ToString();
+                    else if (tmp.type == (int) types.floatType)
+                        tmp.value = (float.Parse(tmp.value) + 1).ToString();
+                    else
+                        throw new Exception(String.Format("inc-var: {0} is not an int or float", task[1]));
+                    break;
+
+                case "run-sleep":
+                    if (task.Count < 2)
+                        throw new Exception("run-sleep requires 1 arguments");
+                    if (!env.varExists(task[1]))
+                        throw new Exception(String.Format("run-sleep: {0} does not exist", task[1]));
+
+                    envVar tmp2 = env.getVar(task[1]);
+                    if (tmp2.type != (int) types.intType)
+                        throw new Exception(String.Format("run-sleep: {0} is not an int", task[1]));
+
+                    Thread.Sleep(int.Parse(tmp2.value));
+                    break;
+
+                case "math":
+                    if (task.Count < 4)
+                        throw new Exception("math requires 3 arguments");
+                    
+                    // check if task[2] and task[3] are ints/floats
+                    bool task2Int   = int.TryParse(task[2], out int tmpInt);
+                    bool task3Int   = int.TryParse(task[3], out int tmpInt2);
+                    
+                    bool task2Float = float.TryParse(task[2], out float tmpFloat);
+                    bool task3Float = float.TryParse(task[3], out float tmpFloat2);
+
+                    if (!task2Int && !task2Float)
+                        throw new Exception(String.Format("math: {0} is not an int or float", task[2]));
+
+                    if (!task3Int && !task3Float)
+                        throw new Exception(String.Format("math: {0} is not an int or float", task[3]));
+
+                    switch (task[1])
+                    {
+                        case "add":
+                            if (task2Int && task3Int)
+                                buffer.Add(new envVar(){name = "math-add", value = (tmpInt + tmpInt2).ToString(), type = (int) types.intType});
+                            else if (task2Float && task3Float)
+                                buffer.Add(new envVar(){name = "math-add", value = (tmpFloat + tmpFloat2).ToString(), type = (int) types.floatType});
+                            else
+                                throw new Exception(String.Format("math: {0} and {1} are not the same type", task[2], task[3]));
+                            break;
+
+                        case "sub":
+                            if (task2Int && task3Int)
+                                buffer.Add(new envVar(){name = "math-sub", value = (tmpInt - tmpInt2).ToString(), type = (int) types.intType});
+                            else if (task2Float && task3Float)
+                                buffer.Add(new envVar(){name = "math-sub", value = (tmpFloat - tmpFloat2).ToString(), type = (int) types.floatType});
+                            else
+                                throw new Exception(String.Format("math: {0} and {1} are not the same type", task[2], task[3]));
+                            break;
+                        
+                        case "mul":
+                            if (task2Int && task3Int)
+                                buffer.Add(new envVar(){name = "math-mul", value = (tmpInt * tmpInt2).ToString(), type = (int) types.intType});
+                            else if (task2Float && task3Float)
+                                buffer.Add(new envVar(){name = "math-mul", value = (tmpFloat * tmpFloat2).ToString(), type = (int) types.floatType});
+                            else
+                                throw new Exception(String.Format("math: {0} and {1} are not the same type", task[2], task[3]));
+                            break;
+
+                        case "div":
+                            if (task2Int && task3Int)
+                                buffer.Add(new envVar(){name = "math-div", value = (tmpInt / tmpInt2).ToString(), type = (int) types.intType});
+                            else if (task2Float && task3Float)
+                                buffer.Add(new envVar(){name = "math-div", value = (tmpFloat / tmpFloat2).ToString(), type = (int) types.floatType});
+                            else
+                                throw new Exception(String.Format("math: {0} and {1} are not the same type", task[2], task[3]));
+                            break;
+                        
+                        default:
+                            throw new Exception(String.Format("math: {0} is not a valid operator", task[1]));
+                    }
+                    break;
+
+                case "goto":
+                    if (task.Count > 1)
+                    {
+                        if (env.blockExists(task[1]))
+                        {
+                            envBlock tmpBlock = env.getBlock(task[1]);
+                            foreach(string line in tmpBlock.code)
+                            {
+                                Console.WriteLine(line);
+                                if (line.Trim() == "goto-end")
+                                    break;
+                                taskHandler(split(line, ' '));
+                            }
+                            
+                        }
+                        else
+                            throw new Exception("goto: " + task[1] + " does not exist");
+                        
+                    } else 
+                        throw new Exception("Error: goto requires a label");
+                    
+                    break;
+
                 case "call":
                     // call a function
                     if (task.Count < 2)
@@ -219,35 +452,7 @@ namespace c69_shell
                         //Console.WriteLine("Calling function " + task[1]);
                         //Console.WriteLine("Arguments:\n" + String.Join("\n", fargs));
 
-                        // check if the number of arguments is correct
-                        if (fargs.Count != f.numArgs)
-                            throw new Exception(String.Format("Function {0} requires {1} arguments but got {2}", f.name, f.numArgs, fargs.Count));
-
-                        // set the arguments
-                        if (f.numArgs > 0)
-                        {
-                            for (int i = 0; i < f.numArgs; i++)
-                                env.setEnv(f.argNames[i], fargs[i]);
-                            
-                        }
-                        env.setEnv("lastTaskExitCode", "null");
-                        // run the function
-                        foreach (string line in f.code)
-                        {
-                            taskHandler(split(line, ' '));
-                            if (env.getVar("lastTaskExitCode").value != "null")
-                                break;
-                        }
-                        if (env.getVar("lastTaskExitCode").value != "0" && env.getVar("lastTaskExitCode").value != "null")
-                            throw new Exception(String.Format("Function {0} exited with code {1}", f.name, env.getVar("lastTaskExitCode").value));
-                        
-                        if (f.numArgs == 0)
-                            break;
-                        
-                        // reset the arguments
-                        foreach (string arg in f.argNames)
-                            env.removeVar(arg);
-                        
+                        callFunction(f, fargs);
                     }
                     break;
                 
@@ -259,7 +464,7 @@ namespace c69_shell
                             args += task[i] + " ";
                     }
 
-                    System.Diagnostics.Process.Start(task[1], args);
+                    runExe(task[1], args);
                     break;
 
                 case "remfunc":
@@ -373,10 +578,57 @@ namespace c69_shell
                                     Console.WriteLine("}");
                                 }
                                 break;
+                            case "alias":
+                                // display all aliases
+                                foreach (string aliasName in env.getAliasNames())
+                                    Console.WriteLine(aliasName + " -> " + env.getAlias(aliasName));
+                                break;
+
+                            case "block":
+                                // display all blocks
+                                foreach (string blockName in env.getBlockNames())
+                                {
+                                    Console.WriteLine(blockName);
+                                    Console.WriteLine("{");
+                                    foreach (string line in env.getBlock(blockName).code)
+                                        Console.WriteLine("\t" + line);
+                                    Console.WriteLine("}");
+                                }
+                                break;
+
+                            default:
+                                throw new Exception("env: " + task[1] + " is not a valid option");
                         }
                         break;
                     }
                     env.listEnv();
+                    break;
+
+                case "loop":
+                    if (task.Count < 4)
+                        throw new Exception("loop: missing arguments");
+                    
+                    loopStart.Add(int.Parse(task[1]));
+                    loopEnd.Add(int.Parse(task[2]));
+                    loopStep.Add(int.Parse(task[3]));
+                    loopCurrentIndex.Add(int.Parse(task[1]));
+                    loopIndex.Add(filePos);
+
+                    break;
+
+                case "loop-end":  
+                    if (loopCurrentIndex[loopCurrentIndex.Count - 1] == loopEnd[loopCurrentIndex.Count - 1])
+                    {
+                        loopCurrentIndex.RemoveAt(loopCurrentIndex.Count - 1);
+                        loopEnd.RemoveAt(loopEnd.Count - 1);
+                        loopStart.RemoveAt(loopStart.Count - 1);
+                        loopStep.RemoveAt(loopStep.Count - 1);
+                        loopIndex.RemoveAt(loopIndex.Count - 1);
+                        break;
+                    }
+                    loopCurrentIndex[loopCurrentIndex.Count - 1] += loopStep[loopCurrentIndex.Count - 1];
+                    filePos = loopIndex[loopIndex.Count - 1];
+                    
                     break;
 
                 case "file-read":
@@ -395,6 +647,7 @@ namespace c69_shell
                     
                     buffer.Add(new envVar() { name = varName, value = slines, type = (int)types.stringType, isReadOnly = false });
                     break;
+
                 case "rename":
                     if(task[1].Contains("/")){
                         if(task[2].Contains("/")){
@@ -442,7 +695,7 @@ namespace c69_shell
                         throw new Exception("move: file does not exist");
                     break;
                     
-                case "make-direcory":
+                case "make-directory":
                     if (task.Count <= 1)
                         throw new Exception("make-direcory: missing directory name");
                     Directory.CreateDirectory(task[1]);
@@ -528,7 +781,6 @@ namespace c69_shell
                 case "type":
                     // get the type of var
                     throw new Exception("type: not implemented");
-                    break;
 
                 case "list-contents":
                     // get a list of files and folders in the current directory
@@ -551,6 +803,7 @@ namespace c69_shell
                         bool isReadOnly = false;
                         bool isValid = false;
                         string value = "";
+                        
                         for (int i = 2; i < task.Count; i++)
                         {
                             isValid = bool.TryParse(task[i], out isReadOnly);
@@ -560,6 +813,84 @@ namespace c69_shell
                         env.setEnv(task[1], value, isReadOnly);
                         break;
                     }
+
+                case "new-array":
+                    if (task.Count < 2)
+                        throw new Exception("new-array: missing array name");
+                    
+                    env.makeArray(task[1]);
+                    break;
+
+                case "array-add":
+                    if (task.Count < 4)
+                        throw new Exception("array-add: missing array name");
+                    
+                    env.arrayAppend(task[1], task[2], task[3]);
+                    break;
+
+                case "array-remove":
+                    if (task.Count < 3)
+                        throw new Exception("array-remove: missing array name");
+                    
+                    env.arrayRemove(task[1], task[2]);
+                    break;
+
+                case "remove-at":
+                    if (task.Count < 3)
+                        throw new Exception("remove-at: missing array name");
+                    bool remove_atIsInt = int.TryParse(task[2], out int index);
+                    if (!remove_atIsInt)
+                        throw new Exception("remove-at: index must be an integer");
+                    env.removeByIndex(task[1], index);
+                    break;
+
+                case "array-indexof":
+                    if (task.Count < 3)
+                        throw new Exception("array-indexof: missing array name");
+                    buffer.Add(new envVar(){name = task[2], value = env.getArrayIndex(task[1], task[3]).ToString()});
+                    break;
+
+                case "array-get":
+                    if (task.Count < 3)
+                        throw new Exception("array-get: missing array name");
+                    
+                    buffer.Add(env.getArrayByName(task[1], task[2]));
+                    break;
+                
+                case "array-get-at":
+                    if (task.Count < 3)
+                        throw new Exception("array-get-at: missing array name");
+                    
+                    if (int.TryParse(task[2], out int aga_index))
+                        buffer.Add(env.getArrayByIndex(task[1], aga_index));
+                    else
+                        throw new Exception("array-get-at: index must be an integer");
+
+                    break;
+
+                case "array-set":
+                    if (task.Count < 5)
+                        throw new Exception("array-set: missing array name");
+                    bool array_setIsInt = int.TryParse(task[2], out int intValue);
+                    if (!array_setIsInt)
+                        throw new Exception("array-set: index must be an integer");
+                    env.setArrayByIndex(task[1], intValue, task[3], task[4]);
+                    break;
+
+                case "array-append":
+                    if (task.Count < 4)
+                        throw new Exception("array-append: missing array name");
+                    env.arrayAppend(task[1], task[2], task[3]);
+                    break;
+
+                case "array-length":
+                    if (task.Count < 2)
+                        throw new Exception("array-length: missing array name");
+                    
+                    buffer.Add(new envVar(){ name = task[1] + "_size", value = env.getArraySize(task[1]).ToString() });
+                    break;
+
+
                 case "no":
                     Console.WriteLine("No");
                     goto stderr;

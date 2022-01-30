@@ -1,0 +1,41 @@
+## TODO: Work on array lib lol
+func makeArray arrname {
+    new-array $arrname
+    return $arrname
+}
+
+func append arrname itemName item {
+    array-append $arrname $itemName $item
+}
+
+func arrayGet arrname itemName ret {
+    array-get $arrname $itemName -> $ret
+}
+
+func arrayGetIndex arrname index ret {
+    array-get-at $arrname $index -> $ret
+}
+
+func arrayInsert arrname itemName item index {
+    array-set $arrname $index $itemName $item
+}
+
+func arrayRemove arrname itemName index {
+    array-remove $arrname $index $itemName
+}
+
+func indexOf arrname itemName ret{
+    array-indexof $arrname $itemName -> $ret
+}
+
+func arraySize arrname ret {
+    array-length $arrname -> $ret
+}
+
+func arrayClear arrname {
+    set arrSize 0 
+    arraySize $arrname arrSize
+    loop 0 arrSize 1 
+        arrayRemove $arrname 0 0 
+    loop-end
+}

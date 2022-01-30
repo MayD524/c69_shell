@@ -1,33 +1,51 @@
 ## aliases
 set-alias cd set-pwd
 set-alias return exit-func
+set-alias print print-console
+set-alias mkdir make-directory
 set-alias ls list-contents
 set-alias fread file-read
 
 load common/io.c69
 
+func md newPth {
+    mkdir $newPth
+    cd $newPth
+}
+
+func current {
+    echo $PWD
+}
+
+func reload {
+    load $HOME$/startup.c69
+}
+
+func setPrompt {
+    set PROMPT C69 $USER $PWD$>
+}
+
 func save_env {
     set outCode 0
     check-is null $ENV_FILE -> envExists
     
-    if envExists
+    if $envExists
         echo "saving env..."
         env out
         echo "saved env..."
     else
         echo "The env file does not exist"
+    end
 
     rem envExists
+
 }
 
 ## check if the user exists
 check-is empty $USER -> noUser
-echo $noUser
-if noUser
-    set newUser Enter a username: 
-    input USER newUser
-    print-console \n
+if $noUser
+    print "Enter a username> " 
+    user-input USER
 else
-    set welcomeMsg Welcome back $USER
-    echo $welcomeMsg
+    echo "Welcome back!"
 end

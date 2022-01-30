@@ -1,0 +1,35 @@
+name          argc    args...          description
+--------------------------------------------------------------------------------------------------------------
+func           1+     name + other     creates a function to be called
+call           1+     name + other     calls a function that exists
+exec           1+     prog + other     calls an executable program
+remfunc        1      name             remove function
+check-is       2+     type var1/2 out  check if a variable is equal to something
+set-alias      2      output cmd       set an alias
+user-input     0-1    outVar           takes user input from the command line (prints or stores)
+load           1      inputFile        loads a c69 script for use
+rem            1      varname          removes a variable by name
+env            0-1    type             outputs different env variable or stored stuff
+file-read      1      filename         reads a file and if '->' is present returns 
+rename         2      fname nfname     renames a file
+delete         1      filename         deletes a file
+copy           2      from  to         copy's a file from 'from' to 'to'
+move           2      from  to         moves a file from 'from' to 'to'
+make-directory 1      dirName          makes a folder with name 'dirName'
+file-write     2      fname data       writes 'data' to 'fname'
+item-exists    2      type  name       checks if 'type' has anything called 'name'
+set-pwd        1      dirName          sets current working dir
+list-contents  0-1    dirName          list contents of dir or current
+set            2+     varname + other  sets variables
+no & stderr    0      ---------------  Memes :)
+print-console  1      printStr         prints to console
+exit           0      ---------------  exits the program
+clear          0      ---------------  clears the screen
+history        1      index            gets history at 'index' or all
+math           3      type num1 num2   runs add/sub/div/mul on two numbers
+block          1      blockName        make a block object
+goto           1      blockName        goto a block
+inc-var        1      varname          increments a var (may not be working :/)
+if/elif/else   1      boolValue        does things if the bool value is true
+loop           3      start end step   loop for start -> end by step
+loop-end       0      ---------------  go back to the top of the loop

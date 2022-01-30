@@ -20,6 +20,7 @@ namespace c69_shellTools
         }
 
         public static string enableEscapeChars(string inp){
+            inp = inp.Trim();
             inp = inp.Replace("\\n", "\n");
             inp = inp.Replace("\\t", "\t");
             inp = inp.Replace("\\r", "\r");
@@ -59,6 +60,20 @@ namespace c69_shellTools
             Console.WriteLine("Directories:");
             foreach (string dir in dirs)
                 Console.WriteLine("\t" + dir);
+        }
+
+        public static void runExe(string exePath, string args)
+        {
+            System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo(exePath, args)
+            {
+                UseShellExecute = false
+            }).WaitForExit();
+        }
+
+        public static string osName()
+        {
+            // get the OS name
+            return Environment.OSVersion.Platform.ToString();
         }
 
         public static List<string> find(string startPath, string lookFor, bool doRecursive=true)
