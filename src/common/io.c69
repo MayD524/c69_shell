@@ -1,4 +1,54 @@
+func cat fName {
+    file-read $fName
+}
 
+func exists pth {
+    check-is dir $pth -> tmp
+    check-is file $pth -> tmp2
+    if $tmp
+        return $tmp
+    end
+    if $tmp2
+        return $tmp2
+    end
+    return $FALSE
+    rem tmp
+    rem tmp2
+}
+
+func rm pth {
+    check-is file $pth -> isFile 
+    if $isFile
+    ## file exists and remove it
+        delete $pth
+    else
+        check-is dir $pth -> isDir
+        if $isDir
+        ## dir exists and remove it
+            delete $pth
+        else
+            ## file or dir does not exist
+            echo "File or dir does not exist"
+        end
+    end
+    rem isFile
+    rem isDir
+}
+
+func touch fName data {
+    check-is file fName -> isFile
+    if $isFile
+        file-write $fName $data
+    else
+        make-file $fName
+        file-write $fName $data
+    end
+    rem isFile
+}
+
+func start pth {
+    exec explorer $pth
+}
 
 func input ret prompt {
     print-console $prompt

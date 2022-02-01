@@ -38,7 +38,6 @@ namespace c69_shellEnv
         public List<string> taskHistory = new List<string>();
         public static Dictionary<string, envBlock> blocks = new Dictionary<string, envBlock>();
         public static Dictionary<string, envVar> env = new Dictionary<string, envVar>();
-        public static Dictionary<string, List<envVar>> envArray = new Dictionary<string, List<envVar>>();
         public static Dictionary<string, envFunction> functions = new Dictionary<string, envFunction>();
         public static Dictionary<string, string> aliases = new Dictionary<string, string>();
         public shellEnv(bool hasEnvFile=false)
@@ -251,88 +250,6 @@ namespace c69_shellEnv
             v.isReadOnly = false;
             v.type = interpretType(value);
             return v;
-        }
-
-        // array stuff
-
-        public bool arrayExists (string name)
-        {
-            return envArray.ContainsKey(name);
-        }
-
-        public envVar getArrayByIndex (string arrayname, int index)
-        {
-            return envArray[arrayname][index];
-        }
-
-        public envVar getArrayByName (string arrayname, string name)
-        {
-            return getArrayByIndex(arrayname, getArrayIndex(arrayname, name));
-        }
-
-        public int getArraySize (string arrayname)
-        {
-            return envArray[arrayname].Count;
-        }
-
-        public int getArrayIndex (string arrayname, string key)
-        {
-            for (int i = 0; i < envArray[arrayname].Count; i++)
-            {
-                if (envArray[arrayname][i].name == key)
-                {
-                    return i;
-                }
-            }
-            return -1;
-        }
-
-        public void setArrayByIndex (string arrayname, int index, string name, string value)
-        {
-            if (!arrayExists(arrayname))
-                throw new Exception(String.Format("Array {0} does not exist", arrayname));
-            envArray[arrayname][index] = makeVar(name, value);
-        }
-        
-
-        public List<envVar> getArray (string arrayname)
-        {
-            if (!arrayExists(arrayname))
-                throw new Exception(String.Format("Array {0} does not exist", arrayname));
-            return envArray[arrayname];
-        }
-
-        public void arrayAppend(string arrayname, string key, string value)
-        {
-            if (!arrayExists(arrayname))
-                throw new Exception(String.Format("Array {0} does not exist", arrayname));
-            
-            envArray[arrayname].Add(makeVar(key, value));
-        }
-
-        public void removeByIndex(string arrayname, int index)
-        {
-            if (!arrayExists(arrayname))
-                throw new Exception(String.Format("Array {0} does not exist", arrayname));
-
-            envArray[arrayname].RemoveAt(index);
-        } 
-
-        public void arrayRemove(string arrayname, string key) 
-        {
-            if (!arrayExists(arrayname))
-                throw new Exception(String.Format("Array {0} does not exist", arrayname));
-
-            int index = getArrayIndex(arrayname, key);
-            if (index == -1)
-                throw new Exception(String.Format("Array {0} does not contain key {1}", arrayname, key));
-
-            envArray[arrayname].RemoveAt(index);
-        }
-
-        public void makeArray(string arrayName)
-        {
-            envArray.Add(arrayName, new List<envVar>());
         }
 
         public void writeEnvFile(string fileName)

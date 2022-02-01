@@ -1,11 +1,9 @@
-func test {
-    check-is equal $USER ma -> tmp
-    if $tmp
-        echo hello
-    else
-        echo goodbye
-    end
-    return 0
-}
+set loop_start 0
+set loop_end   20
+set loop_step  2
+set lookup     0
 
-echo hello
+loop $loop_start $loop_end $loop_step
+    math add $lookup $loop_step -> lookup
+    echo $lookup
+loop-end

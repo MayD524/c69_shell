@@ -13,12 +13,26 @@ func md newPth {
     cd $newPth
 }
 
-func current {
+func py pyFile {
+    check-is file $pyFile -> isFile
+    if $isFile
+        exec python $pyFile
+    else
+        echo "File does not exist"
+    end
+    rem isFile
+}
+
+func pwd {
     echo $PWD
 }
 
 func reload {
     load $HOME$/startup.c69
+}
+
+func restart_prog {
+    exec dotnet run
 }
 
 func setPrompt {
@@ -38,7 +52,6 @@ func save_env {
     end
 
     rem envExists
-
 }
 
 ## check if the user exists
@@ -49,3 +62,4 @@ if $noUser
 else
     echo "Welcome back!"
 end
+rem noUser

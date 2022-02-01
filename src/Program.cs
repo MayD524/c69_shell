@@ -493,6 +493,18 @@ namespace c69_shell
                         case "equal":
                             v.value = task[2] == task[3] ? "1" : "0";
                             break;
+                        
+                        case "varExists":
+                            v.value = env.varExists(task[2]) ? "1" : "0";
+                            break;
+
+                        case "file":
+                            v.value = File.Exists(task[2]) ? "1" : "0";
+                            break;
+
+                        case "dir":
+                            v.value = Directory.Exists(task[2]) ? "1" : "0";
+                            break; 
 
                         case "notequal":
                             v.value = task[2] != task[3] ? "1" : "0";
@@ -813,83 +825,6 @@ namespace c69_shell
                         env.setEnv(task[1], value, isReadOnly);
                         break;
                     }
-
-                case "new-array":
-                    if (task.Count < 2)
-                        throw new Exception("new-array: missing array name");
-                    
-                    env.makeArray(task[1]);
-                    break;
-
-                case "array-add":
-                    if (task.Count < 4)
-                        throw new Exception("array-add: missing array name");
-                    
-                    env.arrayAppend(task[1], task[2], task[3]);
-                    break;
-
-                case "array-remove":
-                    if (task.Count < 3)
-                        throw new Exception("array-remove: missing array name");
-                    
-                    env.arrayRemove(task[1], task[2]);
-                    break;
-
-                case "remove-at":
-                    if (task.Count < 3)
-                        throw new Exception("remove-at: missing array name");
-                    bool remove_atIsInt = int.TryParse(task[2], out int index);
-                    if (!remove_atIsInt)
-                        throw new Exception("remove-at: index must be an integer");
-                    env.removeByIndex(task[1], index);
-                    break;
-
-                case "array-indexof":
-                    if (task.Count < 3)
-                        throw new Exception("array-indexof: missing array name");
-                    buffer.Add(new envVar(){name = task[2], value = env.getArrayIndex(task[1], task[3]).ToString()});
-                    break;
-
-                case "array-get":
-                    if (task.Count < 3)
-                        throw new Exception("array-get: missing array name");
-                    
-                    buffer.Add(env.getArrayByName(task[1], task[2]));
-                    break;
-                
-                case "array-get-at":
-                    if (task.Count < 3)
-                        throw new Exception("array-get-at: missing array name");
-                    
-                    if (int.TryParse(task[2], out int aga_index))
-                        buffer.Add(env.getArrayByIndex(task[1], aga_index));
-                    else
-                        throw new Exception("array-get-at: index must be an integer");
-
-                    break;
-
-                case "array-set":
-                    if (task.Count < 5)
-                        throw new Exception("array-set: missing array name");
-                    bool array_setIsInt = int.TryParse(task[2], out int intValue);
-                    if (!array_setIsInt)
-                        throw new Exception("array-set: index must be an integer");
-                    env.setArrayByIndex(task[1], intValue, task[3], task[4]);
-                    break;
-
-                case "array-append":
-                    if (task.Count < 4)
-                        throw new Exception("array-append: missing array name");
-                    env.arrayAppend(task[1], task[2], task[3]);
-                    break;
-
-                case "array-length":
-                    if (task.Count < 2)
-                        throw new Exception("array-length: missing array name");
-                    
-                    buffer.Add(new envVar(){ name = task[1] + "_size", value = env.getArraySize(task[1]).ToString() });
-                    break;
-
 
                 case "no":
                     Console.WriteLine("No");
