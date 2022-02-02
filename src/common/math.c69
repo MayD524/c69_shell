@@ -4,5 +4,4 @@ func pow base pwr {
     loop 0 $pwr 1
         math mul $pow.ret $base -> pow.ret
     loop-end
-    return $pow.ret
 }

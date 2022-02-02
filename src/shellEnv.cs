@@ -44,10 +44,13 @@ namespace c69_shellEnv
         {
             if (hasEnvFile)
             {
+                Console.WriteLine("Loading environment file...");
                 // read the env file
                 readEnvFile("./env/env.conf");
                 return;
             }
+
+            Console.WriteLine("Creating new environment...");
 
             // set the env dictionary
             setEnv("PATH" , "");
@@ -60,6 +63,8 @@ namespace c69_shellEnv
             setEnv("FALSE", "0"   , true);
             setEnv("NULL" , "NULL", true);
             setEnv("taskCount", "0");
+            setEnv("LOAD_SETUP_SCRIPT", "1", true);
+            setEnv("DEBUG_MODE", "0", false);
             setEnv("lastTaskExitCode", "0");
         }
 
@@ -83,6 +88,11 @@ namespace c69_shellEnv
             if (blockExists(key))
                 return blocks[key];
             throw new Exception("Block does not exist");
+        }
+
+        public void garbageCollect()
+        {
+            
         }
 
         public void removeBlock(string key)
@@ -169,7 +179,6 @@ namespace c69_shellEnv
             func.code = code;
             functions[name] = func;
         }
-        
 
         public bool aliasExists(string name)
         {

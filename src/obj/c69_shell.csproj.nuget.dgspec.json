@@ -1,30 +1,38 @@
 {
   "format": 1,
   "restore": {
-    "C:\\Users\\May\\github\\c69_shell\\src\\c69_shell.csproj": {}
+    "D:\\github\\c69_shell\\src\\c69_shell.csproj": {}
   },
   "projects": {
-    "C:\\Users\\May\\github\\c69_shell\\src\\c69_shell.csproj": {
+    "D:\\github\\c69_shell\\src\\c69_shell.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "C:\\Users\\May\\github\\c69_shell\\src\\c69_shell.csproj",
+        "projectUniqueName": "D:\\github\\c69_shell\\src\\c69_shell.csproj",
         "projectName": "c69_shell",
-        "projectPath": "C:\\Users\\May\\github\\c69_shell\\src\\c69_shell.csproj",
-        "packagesPath": "C:\\Users\\May\\.nuget\\packages\\",
-        "outputPath": "C:\\Users\\May\\github\\c69_shell\\src\\obj\\",
+        "projectPath": "D:\\github\\c69_shell\\src\\c69_shell.csproj",
+        "packagesPath": "C:\\Users\\Cross\\.nuget\\packages\\",
+        "outputPath": "D:\\github\\c69_shell\\src\\obj\\",
         "projectStyle": "PackageReference",
+        "fallbackFolders": [
+          "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages",
+          "C:\\Program Files (x86)\\Microsoft\\Xamarin\\NuGet\\"
+        ],
         "configFilePaths": [
-          "C:\\Users\\May\\AppData\\Roaming\\NuGet\\NuGet.Config"
+          "C:\\Users\\Cross\\AppData\\Roaming\\NuGet\\NuGet.Config",
+          "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.FallbackLocation.config",
+          "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.Offline.config",
+          "C:\\Program Files (x86)\\NuGet\\Config\\Xamarin.Offline.config"
         ],
         "originalTargetFrameworks": [
-          "net6.0"
+          "net5.0"
         ],
         "sources": {
+          "C:\\Program Files (x86)\\Microsoft SDKs\\NuGetPackages\\": {},
           "https://api.nuget.org/v3/index.json": {}
         },
         "frameworks": {
-          "net6.0": {
-            "targetAlias": "net6.0",
+          "net5.0": {
+            "targetAlias": "net5.0",
             "projectReferences": {}
           }
         },
@@ -35,8 +43,8 @@
         }
       },
       "frameworks": {
-        "net6.0": {
-          "targetAlias": "net6.0",
+        "net5.0": {
+          "targetAlias": "net5.0",
           "imports": [
             "net461",
             "net462",
@@ -52,7 +60,7 @@
               "privateAssets": "all"
             }
           },
-          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\6.0.101\\RuntimeIdentifierGraph.json"
+          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\5.0.401\\RuntimeIdentifierGraph.json"
         }
       }
     }

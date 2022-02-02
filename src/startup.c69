@@ -1,6 +1,6 @@
 ## aliases
-set-alias cd set-pwd
 set-alias return exit-func
+set-alias rm delete
 set-alias print print-console
 set-alias mkdir make-directory
 set-alias ls list-contents
@@ -11,6 +11,15 @@ load common/io.c69
 func md newPth {
     mkdir $newPth
     cd $newPth
+}
+
+func cd pth {
+    check-is dir $pth -> dirExists 
+    if $dirExists
+        set-pwd $pth
+    else
+        echo "Directory does not exist"
+    end
 }
 
 func py pyFile {
@@ -59,6 +68,8 @@ check-is empty $USER -> noUser
 if $noUser
     print "Enter a username> " 
     user-input USER
+    set USER $USER True
+    env out
 else
     echo "Welcome back!"
 end

@@ -28,6 +28,7 @@ namespace c69_shell
             if (env == null)
             {
                 // check if the env file exists
+                Console.WriteLine("Checking for env file...");
                 env = new shellEnv(Exists("./env/env.conf"));
             }
             
@@ -70,9 +71,13 @@ namespace c69_shell
 
         static void callFunction(envFunction func, List<string> args)
         {
-            if (func.numArgs != args.Count)
+            if (func.numArgs != args.Count && env.getVar("useNullArgs").value != "1")
                 throw new Exception(String.Format("Function {0} expects {1} arguments, but {2} were given", func.name, func.numArgs, args.Count));
             
+            else
+                for (int i = 0; i < func.numArgs - args.Count; i++)
+                    args.Add("NULL");
+
             // check if the number of arguments is correct
             if (func.numArgs > 0)
             {
@@ -440,7 +445,7 @@ namespace c69_shell
                         List<string> fargs = new List<string>();
                         if(f.numArgs > 0)
                         {
-                            if (task.Count - 2 < f.numArgs)
+                            if (task.Count - 2 < f.numArgs && env.getVar("useNullArgs").value != "1")
                                 throw new Exception("Not enough arguments given");
 
                             for (int i = 2; i < task.Count; i++)
@@ -465,6 +470,51 @@ namespace c69_shell
                     }
 
                     runExe(task[1], args);
+                    break;
+
+                case "exec-plugin":
+                    System.Diagnostics.ProcessStartInfo start = new System.Diagnostics.ProcessStartInfo();
+                    string result = "";
+                    start.FileName = task[1];
+                    // join the rest of the arguments
+                    string pluginArgs = "";
+                    for (int i = 2; i < task.Count; i++)
+                        pluginArgs += task[i] + " ";
+                    start.Arguments = pluginArgs.Trim();
+                    start.UseShellExecute = false;
+                    start.RedirectStandardOutput = true;
+                    start.RedirectStandardError = true;
+                    start.CreateNoWindow = true;
+                    start.UseShellExecute = false;
+
+                    using (System.Diagnostics.Process proc = System.Diagnostics.Process.Start(start))
+                    {
+                        using (StreamReader reader = proc.StandardOutput)
+                        {
+                            result = reader.ReadToEnd();
+                            Console.WriteLine(result);
+                        }
+                    }
+
+                    if (result.Contains("error"))
+                        throw new Exception(result);
+
+                    if (result.Contains("execute:"))
+                    {
+                        result = result.Replace("execute:", "");
+                        if (result.Contains(";"))
+                        {
+                            foreach (string s in result.Split(';'))
+                            {
+                                if (s.Trim() != "")
+                                    taskHandler(split(s, ' '));
+                            }
+                        }
+                        else
+                            taskHandler(split(result, ' '));
+                    }
+
+
                     break;
 
                 case "remfunc":
@@ -813,16 +863,15 @@ namespace c69_shell
                     else
                     {
                         bool isReadOnly = false;
-                        bool isValid = false;
                         string value = "";
                         
                         for (int i = 2; i < task.Count; i++)
                         {
-                            isValid = bool.TryParse(task[i], out isReadOnly);
-                            if (isValid) { break; }
+                            isReadOnly = task[i] == "True";
+                            if (isReadOnly) { break; }
                             value += task[i] + " ";
                         }
-                        env.setEnv(task[1], value, isReadOnly);
+                        env.setEnv(task[1], value.Trim(), isReadOnly);
                         break;
                     }
 
