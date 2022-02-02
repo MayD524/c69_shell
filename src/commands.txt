@@ -20,7 +20,7 @@ file-write     2      fname data       writes 'data' to 'fname'
 item-exists    2      type  name       checks if 'type' has anything called 'name'
 set-pwd        1      dirName          sets current working dir
 list-contents  0-1    dirName          list contents of dir or current
-set            2+     varname + other  sets variables
+set            2+     varname + data   sets variables
 no & stderr    0      ---------------  Memes :)
 print-console  1      printStr         prints to console
 exit           0      ---------------  exits the program

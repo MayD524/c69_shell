@@ -1,13 +1,9 @@
 (Task pool)
 - Command list (handlers)
-- Plugins
-- file management (mkfile, rmfile)
 - expanded tree
 - multi User
 - groups
-- loops
 - file. permissions
-- variable calls
 
 ## Python Support 
 https://betterprogramming.pub/running-python-script-from-c-and-working-with-the-results-843e68d230e5
@@ -32,6 +28,9 @@ https://betterprogramming.pub/running-python-script-from-c-and-working-with-the-
 - tab completion
 
 Done
+- loops
+- Plugins
+- file management (mkfile, rmfile)
 - dir management (mkdir, rmdir)
 - Application exec (kinda fucks everything)
 - boolean operations

@@ -4,21 +4,21 @@ using System;
 
 namespace c69_shellEnv
 {
-    enum types {
+    public enum types {
         nullType,
         stringType,
         intType,
         floatType
     };
 
-    struct envFunction {
+    public struct envFunction {
         public string name;
         public int numArgs;
         public List<string> argNames;
         public List<string> code;
     };
 
-    struct envVar
+    public struct envVar
     {
         public string name;
         public string value;
@@ -26,14 +26,14 @@ namespace c69_shellEnv
         public bool   isReadOnly;
     }
 
-    struct envBlock 
+    public struct envBlock 
     {
         public string name;
         public List<string> code;
 
     }
 
-    class shellEnv
+    public class shellEnv
     {
         public List<string> taskHistory = new List<string>();
         public static Dictionary<string, envBlock> blocks = new Dictionary<string, envBlock>();
@@ -92,7 +92,7 @@ namespace c69_shellEnv
 
         public void garbageCollect()
         {
-            
+            // todo: remove any unnecessary variables
         }
 
         public void removeBlock(string key)
@@ -130,6 +130,14 @@ namespace c69_shellEnv
                 return env[key].isReadOnly;
             }
             return false;
+        }
+
+        public List<string> getVarNames()
+        {
+            List<string> names = new List<string>();
+            foreach (string key in env.Keys)
+                names.Add(key);
+            return names;
         }
 
         public envVar getVar(string key)

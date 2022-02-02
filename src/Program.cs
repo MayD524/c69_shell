@@ -1,10 +1,15 @@
-﻿using static c69_shellTools.c69_shellTools;
+﻿#define useCtx
+
+using static c69_shellTools.c69_shellTools;
 using System.Collections.Generic;
 using System.Threading;
 using c69_shellEnv;
 using System.IO;
 using System;
 
+#if useCtx
+    using c69_shellCTXMgr;
+#endif
 namespace c69_shell
 {
     class Program
@@ -12,6 +17,7 @@ namespace c69_shell
         static bool isAlive = true;
         
         static shellEnv env = null;
+        static ctxMgr ctx = null;
         static List<int> loopStart = new List<int>();
         static List<int> loopEnd = new List<int>();
         static List<int> loopStep = new List<int>();
@@ -30,6 +36,9 @@ namespace c69_shell
                 // check if the env file exists
                 Console.WriteLine("Checking for env file...");
                 env = new shellEnv(Exists("./env/env.conf"));
+                #if useCtx
+                ctx = new ctxMgr(env);
+                #endif
             }
             
             Console.WriteLine("Welcome to the C#69 Shell!\nAuthors: May & Sweden");
@@ -45,10 +54,14 @@ namespace c69_shell
 
             // this should be in a while loop
             while(isAlive){
-                updatePrompt();
-                Console.Write(env.getVar("PROMPT").value);
                 env.setEnv("PWD", Directory.GetCurrentDirectory());
-                string input = Console.ReadLine();
+                updatePrompt();
+                #if useCtx
+                    string input = ctx.getUserInput();
+                #else
+                    Console.Write(env.getVar("PROMPT").value);
+                    string input = Console.ReadLine();
+                #endif
                 input = split(input, '#')[0].Trim(); // remove comments
 
                 List<string> tasks = split(input, ';');
