@@ -1,41 +1,58 @@
-## TODO: Work on array lib lol
-func makeArray arrname {
-    new-array $arrname
-    return $arrname
+
+
+func arrayExists arrName {
+    check-is null $arrName$_size -> $arrName$_exists 
 }
 
-func append arrname itemName item {
-    array-append $arrname $itemName $item
+
+func makeArray arrName capacity {
+    set $arrName$_size 0
+    set $arrName$_capacity $capacity
 }
 
-func arrayGet arrname itemName ret {
-    array-get $arrname $itemName -> $ret
+func arrAppend arrName data {
+    arrayExists $arrName
+    set tmpSize $arrName$_size
+    set tmpSize $tmpSize
+    echo $arrName$_size
+    echo $tmpSize
+    
+    set tmpCapacity $arrName$_capacity
+    set tmpCapacity $tmpCapacity
+
+    set arrExists $arrName$_exists
+    if !$arrExists
+        math add tmpSize 1 -> $arrName$_size
+        check-is greater-equal $tmpSize $tmpCapacity -> outOfBounds
+        rem $tmpCapacity
+
+        if $outOfBounds
+            echo "Array is full"
+            return 0
+        end
+    else 
+        echo "Array does not exist"
+        return 0
+    end
+    set dt $arrName$_data
+    set dt $dt$ $tmpSize
+    set $dt $data
+    set $arrName$_size $tmpSize
 }
 
-func arrayGetIndex arrname index ret {
-    array-get-at $arrname $index -> $ret
-}
+func arrGet arrName index {
+    set i 0
+    loop 0 $arrName$_size 1
 
-func arrayInsert arrname itemName item index {
-    array-set $arrname $index $itemName $item
-}
-
-func arrayRemove arrname itemName index {
-    array-remove $arrname $index $itemName
-}
-
-func indexOf arrname itemName ret{
-    array-indexof $arrname $itemName -> $ret
-}
-
-func arraySize arrname ret {
-    array-length $arrname -> $ret
-}
-
-func arrayClear arrname {
-    set arrSize 0 
-    arraySize $arrname arrSize
-    loop 0 arrSize 1 
-        arrayRemove $arrname 0 0 
+        check-is equal $i $index -> isEqual
+        if $isEqual 
+            set arrGet_data $arrName$_data
+            set arrGet_data $arrGet_data $i
+            set arrGet_data $arrGet_data
+            return 0
+        end
+        math add $i 1 -> i
     loop-end
+
+    echo "Index out of bounds"
 }

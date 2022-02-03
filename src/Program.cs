@@ -1,4 +1,5 @@
-﻿#define useCtx
+﻿//#define useCtx
+//#define useCtx 
 
 using static c69_shellTools.c69_shellTools;
 using System.Collections.Generic;
@@ -7,7 +8,7 @@ using c69_shellEnv;
 using System.IO;
 using System;
 
-#if useCtx
+#if (useCtx)
     using c69_shellCTXMgr;
 #endif
 namespace c69_shell
@@ -17,7 +18,9 @@ namespace c69_shell
         static bool isAlive = true;
         
         static shellEnv env = null;
-        static ctxMgr ctx = null;
+        #if (useCtx)
+            static ctxMgr ctxMgr = null;
+        #endif
         static List<int> loopStart = new List<int>();
         static List<int> loopEnd = new List<int>();
         static List<int> loopStep = new List<int>();
@@ -36,8 +39,8 @@ namespace c69_shell
                 // check if the env file exists
                 Console.WriteLine("Checking for env file...");
                 env = new shellEnv(Exists("./env/env.conf"));
-                #if useCtx
-                ctx = new ctxMgr(env);
+                #if (useCtx)
+                    ctx = new ctxMgr(env);
                 #endif
             }
             
@@ -56,7 +59,7 @@ namespace c69_shell
             while(isAlive){
                 env.setEnv("PWD", Directory.GetCurrentDirectory());
                 updatePrompt();
-                #if useCtx
+                #if (useCtx)
                     string input = ctx.getUserInput();
                 #else
                     Console.Write(env.getVar("PROMPT").value);

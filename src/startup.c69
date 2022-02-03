@@ -1,3 +1,4 @@
+
 ## aliases
 set-alias return exit-func
 set-alias rm delete
@@ -37,11 +38,24 @@ func pwd {
 }
 
 func reload {
+    check-is null $ENV_FILE -> envExists
+    if $envExists
+        echo "No environment file found"
+    else
+        env read
+    end
     load $HOME$/startup.c69
+
+    rem envExists
 }
 
 func restart_prog {
     exec dotnet run
+}
+
+func code pth {
+    ## for opening vs code 
+    exec $vsCodePth$/Code.exe $pth
 }
 
 func setPrompt {
@@ -66,7 +80,7 @@ func save_env {
 ## check if the user exists
 check-is empty $USER -> noUser
 if $noUser
-    print "Enter a username> " 
+    echo "Enter a username> " 
     user-input USER
     set USER $USER True
     env out
