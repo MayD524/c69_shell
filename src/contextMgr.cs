@@ -25,7 +25,6 @@ namespace c69_shellCTXMgr
             }
             return matches.ToArray();
         }
-
         public string getUserInput()
         {
             int taskHistoryIndex = env.taskHistory.Count - 1;

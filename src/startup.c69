@@ -1,3 +1,4 @@
+load common/io.c69
 
 ## aliases
 set-alias return exit-func
@@ -7,7 +8,6 @@ set-alias mkdir make-directory
 set-alias ls list-contents
 set-alias fread file-read
 
-load common/io.c69
 
 func md newPth {
     mkdir $newPth
@@ -80,7 +80,7 @@ func save_env {
 ## check if the user exists
 check-is empty $USER -> noUser
 if $noUser
-    echo "Enter a username> " 
+    print-console "Enter a username> " 
     user-input USER
     set USER $USER True
     env out

@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System;
 
@@ -64,6 +65,7 @@ namespace c69_shellTools
 
         public static void runExe(string exePath, string args)
         {
+            // TODO: if ctrl+c is pressed, kill the process
             System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo(exePath, args)
             {
                 UseShellExecute = false
@@ -74,6 +76,16 @@ namespace c69_shellTools
         {
             // get the OS name
             return Environment.OSVersion.Platform.ToString();
+        }
+
+        public static string deviceName() {
+            // get the device name
+            return Environment.MachineName;
+        }
+
+        public static string userName() {
+            // get the user name
+            return Environment.UserName;
         }
 
         public static List<string> find(string startPath, string lookFor, bool doRecursive=true)

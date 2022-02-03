@@ -4,6 +4,7 @@
 using static c69_shellTools.c69_shellTools;
 using System.Collections.Generic;
 using System.Threading;
+using c69_shellPluginMgr;
 using c69_shellEnv;
 using System.IO;
 using System;
@@ -26,6 +27,7 @@ namespace c69_shell
         static List<int> loopStep = new List<int>();
         static List<int> loopIndex = new List<int>();
         static List<int> loopCurrentIndex = new List<int>();
+        static pluginMgr pmgr = new pluginMgr();
 
         static List<string> currentFile = new List<string>();
         static List<bool> logicChain = new List<bool>() { true };
@@ -313,6 +315,18 @@ namespace c69_shell
                     logicChain[logicChain.Count - 1] = false;
                     break;
 
+                case "device-name":
+                    buffer.Add(new envVar(){name = "device-name", value = deviceName()});
+                    break;
+
+                case "device-uname":
+                    buffer.Add(new envVar() { name = "device-uname", value = userName() });
+                    break;
+
+                case "load-dll":
+                    pmgr.loadDll(task[1], task);
+                    break;
+
                 case "block":
                     envBlock block = new envBlock();
                     block.name = task[1];
@@ -478,6 +492,7 @@ namespace c69_shell
                     break;
                 
                 case "exec":
+                    // TODO: make it so ctrl-c can be used to stop the program but still return to the shell
                     string args = "";
                     if (task.Count > 2)
                     {
