@@ -1,6 +1,4 @@
-﻿//#define useCtx
-//#define useCtx 
-
+﻿
 using static c69_shellTools.c69_shellTools;
 using System.Collections.Generic;
 using System.Threading;
@@ -8,20 +6,14 @@ using c69_shellPluginMgr;
 using c69_shellEnv;
 using System.IO;
 using System;
-
-#if (useCtx)
-    using c69_shellCTXMgr;
-#endif
 namespace c69_shell
 {
     class Program
     {
+        const bool inDev = false;
         static bool isAlive = true;
         
         static shellEnv env = null;
-        #if (useCtx)
-            static ctxMgr ctxMgr = null;
-        #endif
         static List<int> loopStart = new List<int>();
         static List<int> loopEnd = new List<int>();
         static List<int> loopStep = new List<int>();
@@ -34,39 +26,44 @@ namespace c69_shell
         static int filePos = 0;
 
         static void Main(string[] args)
-        {   
-
+        {
+            // get the executable path
+            string exePath = ".";
+            if (!inDev)
+                exePath = Path.GetDirectoryName(System.Reflection.Assembly.GetExecutingAssembly().Location);
+            Console.WriteLine(exePath);
             if (env == null)
             {
                 // check if the env file exists
                 Console.WriteLine("Checking for env file...");
-                env = new shellEnv(Exists("./env/env.conf"));
-                #if (useCtx)
-                    ctx = new ctxMgr(env);
-                #endif
+                env = new shellEnv(Exists(exePath + "/env/env.conf"), exePath);
             }
             
-            Console.WriteLine("Welcome to the C#69 Shell!\nAuthors: May & Sweden");
 
             if (env.getVar("HOME").value == "")
-                env.setEnv("HOME", Directory.GetCurrentDirectory());
+                env.setEnv("HOME", exePath);
             
-            if (env.getVar("LOAD_SETUP_SCRIPT").value == "1")
-            
+            if (env.getVar("LOAD_SETUP_SCRIPT").value == "1" && args.Length != 1)
+            {
                 // load the startup file
-                scriptHandler("./startup.c69");
-            
+                string home = env.getVar("HOME").value;
+                scriptHandler(home + "/startup.c69");
+            }
 
+            if (args.Length == 1)
+            {
+                // run shell script
+                scriptHandler(args[0]);
+                return;
+            }
+            
             // this should be in a while loop
             while(isAlive){
                 env.setEnv("PWD", Directory.GetCurrentDirectory());
                 updatePrompt();
-                #if (useCtx)
-                    string input = ctx.getUserInput();
-                #else
-                    Console.Write(env.getVar("PROMPT").value);
-                    string input = Console.ReadLine();
-                #endif
+                Console.Write(env.getVar("PROMPT").value);
+                
+                string input = Console.ReadLine();
                 input = split(input, '#')[0].Trim(); // remove comments
 
                 List<string> tasks = split(input, ';');
@@ -324,8 +321,19 @@ namespace c69_shell
                     break;
 
                 case "load-dll":
-                    pmgr.loadDll(task[1], task);
+                    pmgr.loadDll(task[1]);
                     break;
+
+                case "dll-function-call":
+                    string[] dllArgs = new string[32];
+                                        
+                    // get the remaining args
+                    for (int i = 3; i < task.Count; i++) {
+                        dllArgs[i - 1] = task[i]; 
+                    }
+                    pmgr.callFunction(task[1], task[2], env, dllArgs);
+                    break;
+
 
                 case "block":
                     envBlock block = new envBlock();
@@ -996,8 +1004,8 @@ namespace c69_shell
                 } else {
                     Console.WriteLine("Error: there is nothing after '->'.");
                 }
-                
             }
         }
+
     }
 }

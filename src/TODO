@@ -10,6 +10,7 @@ https://betterprogramming.pub/running-python-script-from-c-and-working-with-the-
 (Bugs)
 
 (Jerk pool)
+- delay (task scheduler)
 
 
 (May pool)
@@ -17,7 +18,6 @@ https://betterprogramming.pub/running-python-script-from-c-and-working-with-the-
 - Extensions
 - arg parsing to function
 - file finding 50%
-- delay (task scheduler)
 - arrays
 
 [ex]

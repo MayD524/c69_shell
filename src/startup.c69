@@ -1,6 +1,7 @@
-load common/io.c69
+load $HOME$/common/io.c69
 
 ## aliases
+set-alias dllcall dll-function-call
 set-alias return exit-func
 set-alias rm delete
 set-alias print print-console

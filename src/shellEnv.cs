@@ -40,13 +40,13 @@ namespace c69_shellEnv
         public static Dictionary<string, envVar> env = new Dictionary<string, envVar>();
         public static Dictionary<string, envFunction> functions = new Dictionary<string, envFunction>();
         public static Dictionary<string, string> aliases = new Dictionary<string, string>();
-        public shellEnv(bool hasEnvFile=false)
+        public shellEnv(bool hasEnvFile=false, string exePath = ".")
         {
             if (hasEnvFile)
             {
                 Console.WriteLine("Loading environment file...");
                 // read the env file
-                readEnvFile("./env/env.conf");
+                readEnvFile(exePath + "/env/env.conf");
                 return;
             }
 

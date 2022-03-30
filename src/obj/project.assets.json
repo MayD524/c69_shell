@@ -8,24 +8,34 @@
     "net6.0": []
   },
   "packageFolders": {
-    "C:\\Users\\May\\.nuget\\packages\\": {}
+    "C:\\Users\\Cross\\.nuget\\packages\\": {},
+    "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages": {},
+    "C:\\Program Files (x86)\\Microsoft\\Xamarin\\NuGet\\": {}
   },
   "project": {
     "version": "1.0.0",
     "restore": {
-      "projectUniqueName": "C:\\Users\\May\\github\\c69_shell\\src\\c69_shell.csproj",
+      "projectUniqueName": "D:\\github\\c69_shell\\src\\c69_shell.csproj",
       "projectName": "c69_shell",
-      "projectPath": "C:\\Users\\May\\github\\c69_shell\\src\\c69_shell.csproj",
-      "packagesPath": "C:\\Users\\May\\.nuget\\packages\\",
-      "outputPath": "C:\\Users\\May\\github\\c69_shell\\src\\obj\\",
+      "projectPath": "D:\\github\\c69_shell\\src\\c69_shell.csproj",
+      "packagesPath": "C:\\Users\\Cross\\.nuget\\packages\\",
+      "outputPath": "D:\\github\\c69_shell\\src\\obj\\",
       "projectStyle": "PackageReference",
+      "fallbackFolders": [
+        "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages",
+        "C:\\Program Files (x86)\\Microsoft\\Xamarin\\NuGet\\"
+      ],
       "configFilePaths": [
-        "C:\\Users\\May\\AppData\\Roaming\\NuGet\\NuGet.Config"
+        "C:\\Users\\Cross\\AppData\\Roaming\\NuGet\\NuGet.Config",
+        "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.FallbackLocation.config",
+        "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.Offline.config",
+        "C:\\Program Files (x86)\\NuGet\\Config\\Xamarin.Offline.config"
       ],
       "originalTargetFrameworks": [
         "net6.0"
       ],
       "sources": {
+        "C:\\Program Files (x86)\\Microsoft SDKs\\NuGetPackages\\": {},
         "https://api.nuget.org/v3/index.json": {}
       },
       "frameworks": {
